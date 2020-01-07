@@ -61,17 +61,9 @@ const disconnect = async (io, socket, disconnectMessage) => {
 
 const postAuthenticate = async (io, socket) => {
 	try {
-		const { redisClient }	= require('../../index.js');
+		const { applyLobbyEvents, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
-		let user;
-		try {
-			user = await userDb.getUserById(user_id);
-		} catch (e) {
-			// if an error occurred while getting user by id, send error and disconnect player
-			const errMsg = 'Post Authenticate Error: ' + e.toString();
-			socket.emit(error_message, errMsg);
-			return socket.disconnect(true);
-		}
+		const user = await userDb.getUserById(user_id);
 		socket.emit('user_connect', user);
 		socket.conn.on('packet', async packet => {
 			if (socket.auth && packet.type === 'ping') {
@@ -85,9 +77,13 @@ const postAuthenticate = async (io, socket) => {
 				}
 			}
 		});
+		applyLobbyEvents(socket);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
-		return console.log('User postAuthenticate error:', e);
+		const errMsg = 'Post Authenticate Error: ' + e.toString();
+		console.log(errMsg);
+		socket.emit(error_message, errMsg);
+		return socket.disconnect(true);
 	}
 };
 

@@ -1,20 +1,7 @@
-const {
-	constants,
-}	= require('../../config/index.js');
-
-const {
-	users,
-}	= constants;
-
 exports.up = function(knex) {
-	return knex.schema.createTable(users, function(table) {
+	return knex.schema.createTable('users', function(table) {
 		table
 			.increments();
-
-		table
-			.integer('chips')
-			.defaultsTo(3000)
-			.notNullable();
 
 		table
 			.string('email')
@@ -28,9 +15,14 @@ exports.up = function(knex) {
 
 		table
 			.string('picture');
+
+		table
+			.integer('user_chips')
+			.defaultsTo(3000)
+			.notNullable();
 	});
 };
 
 exports.down = function(knex) {
-	return knex.schema.dropTableIfExists(users);
+	return knex.schema.dropTableIfExists('users');
 };
