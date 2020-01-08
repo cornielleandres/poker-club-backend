@@ -10,6 +10,8 @@ const {
 	gameTypes,
 	maxPlayers,
 	tableTypes,
+	totalTimeNormal,
+	totalTimeTurbo,
 } = constants;
 
 module.exports = {
@@ -39,5 +41,38 @@ module.exports = {
 			return table;
 		});
 		return lobbyTables;
+	},
+	getTable: async id => {
+		const table = await db('tables').where({ id }).first();
+		if (!table) throw new Error('This table does not exist.');
+		const tablePlayers = await db('table-players as tp')
+			.where({ table_id: id })
+			.select(
+				'tp.bet',
+				'tp.action',
+				'tp.cards',
+				'tp.end_action',
+				'tp.dealer_btn',
+				'u.name',
+				'u.picture',
+				'tp.position',
+				'tp.table_chips',
+				'tp.timer_end',
+				'tp.user_id',
+			)
+			.join('users as u', 'tp.user_id', 'u.id');
+		table.players = [];
+		const { max_players, players, table_type } = table;
+		for (let i = 0; i < max_players; i++) players.push(null);
+		tablePlayers.forEach(user => {
+			const { position } = user;
+			if (user.action) {
+				// tableTypes[1] === Turbo
+				if (table_type === tableTypes[1]) user.total_time = totalTimeTurbo;
+				else user.total_time = totalTimeNormal;
+			}
+			players[ position ] = user;
+		});
+		return table;
 	},
 };

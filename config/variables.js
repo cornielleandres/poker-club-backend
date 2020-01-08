@@ -25,7 +25,4 @@ module.exports = {
 	// server
 	frontendURL: process.env.FRONTEND_URL,
 	port: process.env.PORT || 5000,
-
-	// errors
-	userDoesNotExistError: user_id => `User id ${ user_id } does not exist.`,
 };

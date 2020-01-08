@@ -1,13 +1,6 @@
 const db	= require('../dbConfig.js');
 
-// config
-const {
-	variables,
-}	= require('../../config/index.js');
-
-const {
-	userDoesNotExistError,
-}	= variables;
+const userDoesNotExistError = user_id => `User id ${ user_id } does not exist.`;
 
 module.exports = {
 	getOrAddUser: async userInfo => {

@@ -12,12 +12,13 @@ module.exports = {
 	totalTimeTurbo: 15000,
 
 	// event names
+	error_message: 'error_message',
 	update_lobby_tables: 'update_lobby_tables',
 
 	// room names
 	lobby_room: 'lobby_room',
+	table_room: 'table_room_',
 
 	// misc
-	error_message: 'error_message',
 	usersKey: 'users:',
 };

@@ -61,7 +61,7 @@ const disconnect = async (io, socket, disconnectMessage) => {
 
 const postAuthenticate = async (io, socket) => {
 	try {
-		const { applyLobbyEvents, redisClient }	= require('../../index.js');
+		const { applyLobbyEvents, applyTableEvents, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
 		const user = await userDb.getUserById(user_id);
 		socket.emit('user_connect', user);
@@ -78,6 +78,7 @@ const postAuthenticate = async (io, socket) => {
 			}
 		});
 		applyLobbyEvents(socket);
+		applyTableEvents(io, socket);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
 		const errMsg = 'Post Authenticate Error: ' + e.toString();

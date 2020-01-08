@@ -5,18 +5,9 @@ exports.up = async (knex) => {
 				.increments();
 
 			table
-				.integer('table_id')
-				.references('id')
-				.inTable('tables')
-				.notNullable()
-				.onDelete('CASCADE');
-
-			table
-				.integer('user_id')
-				.references('id')
-				.inTable('users')
-				.notNullable()
-				.onDelete('NO ACTION');
+				.boolean('action')
+				.defaultTo(false)
+				.notNullable();
 
 			table
 				.integer('bet')
@@ -30,11 +21,6 @@ exports.up = async (knex) => {
 
 			table
 				.boolean('dealer_btn')
-				.defaultTo(false)
-				.notNullable();
-
-			table
-				.boolean('action')
 				.defaultTo(false)
 				.notNullable();
 
@@ -53,19 +39,33 @@ exports.up = async (knex) => {
 				.notNullable();
 
 			table
+				.integer('table_id')
+				.references('id')
+				.inTable('tables')
+				.notNullable()
+				.onDelete('CASCADE');
+
+			table
 				.datetime('timer_end')
 				.defaultTo(null);
 
 			table
-				.unique([ 'table_id', 'user_id' ]);
+				.integer('user_id')
+				.references('id')
+				.inTable('users')
+				.notNullable()
+				.onDelete('NO ACTION');
 
 			table
 				.unique([ 'table_id', 'position' ]);
+
+			table
+				.unique([ 'table_id', 'user_id' ]);
 		});
 		await knex.schema
-			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, dealer_btn) WHERE dealer_btn = true');
-		await knex.schema
 			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, action) WHERE action = true');
+		await knex.schema
+			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, dealer_btn) WHERE dealer_btn = true');
 		await knex.schema
 			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, end_action) WHERE end_action = true');
 		return knex.schema

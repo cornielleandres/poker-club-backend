@@ -8,8 +8,8 @@
 	"license": "MIT",
 	"private": true,
 	"scripts": {
-    "start": "nodemon index.js"
-  },
+		"start": "nodemon index.js"
+	},
 	"dependencies": {
 		"bluebird": "^3.7.2",
 		"dotenv": "^8.2.0",
@@ -17,6 +17,7 @@
 		"http": "^0.0.0",
 		"jsonwebtoken": "^8.5.1",
 		"knex": "^0.20.6",
+		"lodash": "^4.17.15",
 		"pg": "^7.17.0",
 		"redis": "^2.8.0",
 		"socket.io": "^2.3.0",

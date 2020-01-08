@@ -5,19 +5,17 @@ const {
 	constants,
 }	= require('../../config/index.js');
 
-// models
-const {
-	userDb,
-}	= require('./index.js');
-
 const {
 	gameTypes,
 }	= constants;
+
+const positionOrderToJoin = [ 0, 3, 5, 2, 4, 1];
 
 module.exports = {
 	joinTable: async (table_id, user_id) => {
 		const trx = await db.transaction();
 		try {
+			const { userDb }	= require('./index.js');
 			const table = await trx('tables')
 				.select('big_blind', 'game_type', 'max_players')
 				.where({ id: table_id })
@@ -27,15 +25,16 @@ module.exports = {
 				.select(trx.raw('ARRAY_AGG(position) as positions'), trx.raw('ARRAY_AGG(user_id) as user_ids'))
 				.where({ table_id })
 				.first();
-			if (user_ids.includes(user_id)) return;
-			const positionsLen = positions.length;
+			const { big_blind, game_type, max_players } = table;
+			if (user_ids && user_ids.includes(user_id)) return;
+			const positionsLen = positions ? positions.length : 0;
 			if (max_players <= positionsLen) throw new Error('Table is full. You cannot join.');
 			const { table_chips, user_chips } = await userDb.takeBuyInFromUserChips(user_id, big_blind, trx);
-			const { big_blind, game_type, max_players } = table;
-			const newTablePlayer = { position: positionsLen, table_chips, table_id, user_id };
+			const position = positions ? positionOrderToJoin.find(p => !positions.includes(p)) : 0;
+			const newTablePlayer = { position, table_chips, table_id, user_id };
 			// gameTypes[1] === PL Omaha
 			if (game_type === gameTypes[1]) newTablePlayer.cards = JSON.stringify([ {}, {}, {}, {} ]);
-			await trx('tables-players').insert(newTablePlayer);
+			await trx('table-players').insert(newTablePlayer);
 			await trx.commit();
 			return user_chips;
 		} catch (e) {
