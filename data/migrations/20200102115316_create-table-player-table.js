@@ -30,6 +30,11 @@ exports.up = async (knex) => {
 				.notNullable();
 
 			table
+				.boolean('in_table_room')
+				.defaultTo(true)
+				.notNullable();
+
+			table
 				.integer('position')
 				.notNullable();
 
@@ -68,6 +73,8 @@ exports.up = async (knex) => {
 			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, dealer_btn) WHERE dealer_btn = true');
 		await knex.schema
 			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, end_action) WHERE end_action = true');
+		await knex.schema
+			.raw('CREATE UNIQUE INDEX ON "table-players" (user_id, in_table_room) WHERE in_table_room = true');
 		return knex.schema
 			.raw('CREATE UNIQUE INDEX ON "table-players" (table_id, timer_end) WHERE timer_end IS NOT NULL');
 	} catch (e) {

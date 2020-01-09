@@ -21,7 +21,8 @@ module.exports = async (socket, table, callback) => {
 		const tables = await tableDb.getLobbyTables();
 		return socket.to(lobby_room).emit(update_lobby_tables, tables);
 	} catch (e) {
-		const errMsg = 'Add Table Error: ' + e.toString();
+		const errMsg = 'Add Table' + e.toString();
+		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}
 };

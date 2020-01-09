@@ -3,6 +3,9 @@ const db	= require('../dbConfig.js');
 const userDoesNotExistError = user_id => `User id ${ user_id } does not exist.`;
 
 module.exports = {
+	addToUserChips: (id, amount) => (
+		db('users').where({ id }).increment('user_chips', amount).returning('user_chips')
+	),
 	getOrAddUser: async userInfo => {
 		const { email, picture } = userInfo;
 		const user = await db('users').select('id', 'picture').where({ email }).first();

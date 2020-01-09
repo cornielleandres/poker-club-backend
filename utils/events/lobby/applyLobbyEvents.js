@@ -9,17 +9,14 @@ const {
 }	= constants;
 
 const add_table = 'add_table';
-const get_allowed_table_values = 'get_allowed_table_values';
 
 const _addAllLobbyEventListeners = socket => {
-	const { handleGetAllowedTableValues, handleAddTable } = require('../../index.js');
+	const { handleAddTable } = require('../../index.js');
 	socket.on(add_table, (table, callback) => handleAddTable(socket, table, callback));
-	socket.on(get_allowed_table_values, callback => handleGetAllowedTableValues(socket, callback));
 };
 
 const _removeAllLobbyEventListeners = socket => {
 	socket.removeAllListeners(add_table);
-	socket.removeAllListeners(get_allowed_table_values);
 };
 
 module.exports = socket => {

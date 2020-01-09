@@ -17,7 +17,8 @@ module.exports = async (socket, table_id, callback) => {
 		const user_chips = await tablePlayerDb.joinTable(table_id, socket.user_id);
 		callback(user_chips);
 	} catch (e) {
-		const errMsg = 'Join Table Error: ' + e.toString();
+		const errMsg = 'Join Table' + e.toString();
+		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}
 };

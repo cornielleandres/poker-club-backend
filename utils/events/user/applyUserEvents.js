@@ -9,10 +9,15 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
+	bigBlinds,
 	error_message,
+	gameTypes,
+	maxPlayers,
+	tableTypes,
 	usersKey,
 }	= constants;
 
+const allowedTableValues = { bigBlinds, gameTypes, maxPlayers, tableTypes };
 const disconnectMessage = 'You have been disconnected because you logged in somewhere else.';
 const logOutMessage = 'You have been logged out. Please wait a minute and try logging in again. If that does not work, contact the administrator.';
 
@@ -45,10 +50,11 @@ const authenticate = async (io, socket, payload, callback) => {
 
 const disconnect = async (io, socket, disconnectMessage) => {
 	try {
-		const { redisClient }	= require('../../index.js');
+		const { handlePlayerLeaves, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
 		if (user_id) {
 			await redisClient.delAsync(usersKey + user_id);
+			await handlePlayerLeaves(io, socket);
 			delete socket.user_id;
 			socket.auth = false;
 			socket.emit(error_message, disconnectMessage || 'You have been disconnected.');
@@ -61,10 +67,14 @@ const disconnect = async (io, socket, disconnectMessage) => {
 
 const postAuthenticate = async (io, socket) => {
 	try {
-		const { applyLobbyEvents, applyTableEvents, redisClient }	= require('../../index.js');
+		const {
+			applyLobbyEvents,
+			applyTableEvents,
+			redisClient,
+		}	= require('../../index.js');
 		const { user_id } = socket;
 		const user = await userDb.getUserById(user_id);
-		socket.emit('user_connect', user);
+		socket.emit('user_connect', user, allowedTableValues);
 		socket.conn.on('packet', async packet => {
 			if (socket.auth && packet.type === 'ping') {
 				try {
@@ -72,7 +82,8 @@ const postAuthenticate = async (io, socket) => {
 					// EX 30 will auto-expire the lock after 30 seconds.
 					await redisClient.setAsync(usersKey + user_id, socket.id, 'XX', 'EX', 30);
 				} catch (e) {
-					const errMsg = 'Packet Error: ' + e.toString();
+					const errMsg = 'Packet' + e.toString();
+					console.log(errMsg);
 					return socket.emit(error_message, errMsg);
 				}
 			}
@@ -81,7 +92,7 @@ const postAuthenticate = async (io, socket) => {
 		applyTableEvents(io, socket);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
-		const errMsg = 'Post Authenticate Error: ' + e.toString();
+		const errMsg = 'Post Authenticate' + e.toString();
 		console.log(errMsg);
 		socket.emit(error_message, errMsg);
 		return socket.disconnect(true);

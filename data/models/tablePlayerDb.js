@@ -9,9 +9,16 @@ const {
 	gameTypes,
 }	= constants;
 
-const positionOrderToJoin = [ 0, 3, 5, 2, 4, 1];
+const positionOrderToJoin = [ 0, 3, 5, 2, 4, 1 ];
 
 module.exports = {
+	deleteTablePlayer: (table_id, user_id) => db('table-players').where({ table_id, user_id }).del(),
+	getTablePlayerByUserId: async user_id => {
+		const tablePlayer = await db('table-players').where({ user_id }).first();
+		if (!tablePlayer) throw new Error(`No table player found with user_id ${ user_id }.`);
+		return tablePlayer;
+	},
+	getTablePlayersOrderedByPosition: table_id => db('table-players').where({ table_id }).orderBy('position'),
 	joinTable: async (table_id, user_id) => {
 		const trx = await db.transaction();
 		try {
@@ -42,4 +49,11 @@ module.exports = {
 			throw new Error(e);
 		}
 	},
+	updateEndAction: async (table_id, position) => {
+		await db('table-players').where({ table_id, end_action: true }).update({ end_action: false });
+		await db('table-players').where({ table_id, position }).update({ end_action: true });
+	},
+	updateInTableRoom: (table_id, user_id, in_table_room) => (
+		db('table-players').where({ table_id, user_id }).update({ in_table_room })
+	),
 };

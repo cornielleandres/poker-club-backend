@@ -23,13 +23,14 @@ module.exports = {
 		if (!tableTypes.includes(table_type)) throw new Error(`Table type ${ table_type } not allowed.`);
 		return db('tables').insert(table).returning('id');
 	},
+	deleteTable: id => db('tables').where({ id }).del(),
 	getLobbyTables: async () => {
 		let lobbyTables = await db('tables')
 			.select('id', 'big_blind', 'game_type', 'max_players', 'table_type')
 			.orderBy('id');
 		const lobbyTableIds = lobbyTables.map(table => table.id);
 		const lobbyTablePlayers = await db('table-players as tp')
-			.select('tp.table_id', 'tp.user_id', 'u.picture', 'tp.position')
+			.select('tp.in_table_room', 'u.picture', 'tp.position', 'tp.table_id', 'tp.user_id')
 			.whereIn('table_id', lobbyTableIds)
 			.join('users as u', 'tp.user_id', 'u.id');
 		lobbyTables = lobbyTables.map(table => {
@@ -53,6 +54,7 @@ module.exports = {
 				'tp.cards',
 				'tp.end_action',
 				'tp.dealer_btn',
+				'tp.in_table_room',
 				'u.name',
 				'u.picture',
 				'tp.position',
