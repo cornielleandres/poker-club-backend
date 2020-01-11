@@ -35,6 +35,10 @@ exports.up = async (knex) => {
 				.notNullable();
 
 			table
+				.datetime('join_date')
+				.defaultTo(knex.fn.now());
+
+			table
 				.integer('position')
 				.notNullable();
 
