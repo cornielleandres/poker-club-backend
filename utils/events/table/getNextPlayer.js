@@ -9,8 +9,10 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	defaultMaxPlayers,
+	maxPlayers,
 }	= constants;
+
+const defaultMaxPlayers = maxPlayers[0];
 
 module.exports = async (table_id, start) => {
 	const { isNonEmptyObject } = require('./index.js');

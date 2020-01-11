@@ -2,6 +2,12 @@ const db	= require('../dbConfig.js');
 
 const userDoesNotExistError = user_id => `User id ${ user_id } does not exist.`;
 
+const getUserChips = async (id, trx) => {
+	const user = await trx('users').select('user_chips').where({ id }).first();
+	if (!user) throw new Error(userDoesNotExistError(id));
+	return user.user_chips;
+};
+
 module.exports = {
 	addToUserChips: (id, amount) => (
 		db('users').where({ id }).increment('user_chips', amount).returning('user_chips')
@@ -24,14 +30,17 @@ module.exports = {
 	getUserById: async id => {
 		const user = await db('users').select('id', 'name', 'picture', 'user_chips').where({ id }).first();
 		if (!user) throw new Error(userDoesNotExistError(id));
-		const tablePlayer = await db('table-players').select('table_id').where({ user_id: id }).first();
-		return tablePlayer ? { user, table_id: tablePlayer.table_id } : { user };
+		const tablePlayer = await db('table-players')
+			.select('table_id')
+			.where({ user_id: id })
+			.orderBy('join_date', 'desc')
+			.first();
+		return tablePlayer ? { table_id: tablePlayer.table_id, user } : { user };
 	},
+	getUserChips,
 	takeBuyInFromUserChips: async (id, big_blind, trx) => {
-		const user = await trx('users').select('user_chips').where({ id }).first();
-		if (!user) throw new Error(userDoesNotExistError(id));
-		const { user_chips } = user;
-		if (!user_chips) throw new Error('You have no more chips left.');
+		const user_chips = await getUserChips(id, trx);
+		if (!user_chips) throw new Error(`You have ${ user_chips } chips left.`);
 		const maxBuyIn = big_blind * 100;
 		const table_chips = Math.min(user_chips, maxBuyIn);
 		const newUserChips = user_chips - table_chips;

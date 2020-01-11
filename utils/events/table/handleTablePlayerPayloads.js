@@ -5,16 +5,21 @@ const {
 	constants,
 }	= require('../../../config/index.js');
 
+// databases
+const {
+	tableDb,
+}	= require('../../../data/models/index.js');
+
 const {
 	error_message,
 	gameTypes,
 	table_room,
 }	= constants;
 
-module.exports = (io, table, event_name, position) => {
-	const table_id = table.id;
+module.exports = async (io, table_id, event_name, positions) => {
 	try {
 		const { isNonEmptyObject }	= require('../../index.js');
+		const table = await tableDb.getTable(table_id);
 		const { game_type } = table;
 		const hiddenCards = game_type === gameTypes[1] // gameTypes[1] === PL Omaha
 			? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
@@ -37,18 +42,18 @@ module.exports = (io, table, event_name, position) => {
 							}
 							return p;
 						});
-					const payload = { position, table: clientTable };
+					const payload = { positions, table: clientTable };
 					clientsAndPayloads.push({ client, payload });
 				});
 				clientsAndPayloads.forEach(c => io.to(c.client).emit(event_name, c.payload));
 			} catch (e) {
-				const errMsg = 'Table Clients And Payloads' + e.toString();
+				const errMsg = 'Table Clients And Payloads for Event' + event_name + e.toString();
 				console.log(errMsg);
 				return io.in(table_room + table_id).emit(error_message, errMsg);
 			}
 		});
 	} catch (e) {
-		const errMsg = 'Table Player Payloads' + e.toString();
+		const errMsg = 'Table Player Payloads for Event' + event_name + e.toString();
 		console.log(errMsg);
 		return io.in(table_room + table_id).emit(error_message, errMsg);
 	}

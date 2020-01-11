@@ -3,21 +3,16 @@ const {
 	constants,
 }	= require('../../../config/index.js');
 
-// models
-const {
-	tableDb,
-}	= require('../../../data/models/index.js');
-
 const {
 	error_message,
 }	= constants;
 
 module.exports = async (socket, callback) => {
 	try {
-		const lobbyTables = await tableDb.getLobbyTables();
-		return callback(lobbyTables);
+		const { handleUpdateLobbyTables }	= require('../../index.js');
+		return handleUpdateLobbyTables(null, null, callback);
 	} catch (e) {
-		const errMsg = 'Handle Get Lobby Tables' + e.toString();
+		const errMsg = 'Get Lobby Tables' + e.toString();
 		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}

@@ -8,11 +8,19 @@ const {
 const {
 	bigBlinds,
 	gameTypes,
+	initialCommunityCards,
+	initialDeck,
+	initialPot,
 	maxPlayers,
+	streets,
 	tableTypes,
 	totalTimeNormal,
 	totalTimeTurbo,
 } = constants;
+
+const {
+	preflop,
+}	= streets;
 
 module.exports = {
 	addTable: table => {
@@ -24,6 +32,14 @@ module.exports = {
 		return db('tables').insert(table).returning('id');
 	},
 	deleteTable: id => db('tables').where({ id }).del(),
+	getDeckGameTypeAndPositions: async id => {
+		const { deck, game_type } = await db('tables').where({ id }).select('deck', 'game_type').first();
+		const { positions } = await db('table-players')
+			.select(db.raw('ARRAY_AGG(position) as positions'))
+			.where({ table_id: id })
+			.first();
+		return { deck, game_type, positions };
+	},
 	getLobbyTables: async () => {
 		let lobbyTables = await db('tables')
 			.select('id', 'big_blind', 'game_type', 'max_players', 'table_type')
@@ -44,7 +60,17 @@ module.exports = {
 		return lobbyTables;
 	},
 	getTable: async id => {
-		const table = await db('tables').where({ id }).first();
+		const table = await db('tables').where({ id }).select(
+			'big_blind',
+			'call_amount',
+			'community_cards',
+			'game_type',
+			'hand_id',
+			'max_players',
+			'pot',
+			'street',
+			'table_type',
+		).first();
 		if (!table) throw new Error('This table does not exist.');
 		const tablePlayers = await db('table-players as tp')
 			.where({ table_id: id })
@@ -76,5 +102,22 @@ module.exports = {
 			players[ position ] = user;
 		});
 		return table;
+	},
+	resetTable: id => (
+		db('tables').update({ call_amount: 0, pot: JSON.stringify(initialPot), street: '' }).where({ id })
+	),
+	updateDeck: (id, deck) => db('tables').update({ deck: JSON.stringify(deck) }).where({ id }),
+	updateTableForNewHand: async id => {
+		const { big_blind, hand_id } = await db('tables').where({ id }).select('big_blind', 'hand_id').first();
+		return db('tables')
+			.where({ id })
+			.update({
+				call_amount: big_blind,
+				community_cards: JSON.stringify(initialCommunityCards),
+				deck: JSON.stringify(initialDeck),
+				hand_id: hand_id + 1,
+				pot: JSON.stringify(initialPot),
+				street: preflop,
+			});
 	},
 };

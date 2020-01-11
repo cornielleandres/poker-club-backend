@@ -3,11 +3,12 @@ const {
 }	= require('../../config/index.js');
 
 const {
-	defaultBigBlind,
-	defaultMaxPlayers,
-	defaultPot,
+	bigBlinds,
 	gameTypes,
 	initialCommunityCards,
+	initialDeck,
+	initialPot,
+	maxPlayers,
 	tableTypes,
 } = constants;
 
@@ -18,7 +19,7 @@ exports.up = function(knex) {
 
 		table
 			.integer('big_blind') // even integer
-			.defaultTo(defaultBigBlind)
+			.defaultTo(bigBlinds[0])
 			.notNullable();
 
 		table
@@ -29,6 +30,11 @@ exports.up = function(knex) {
 		table
 			.jsonb('community_cards')
 			.defaultTo(JSON.stringify(initialCommunityCards))
+			.notNullable();
+
+		table
+			.jsonb('deck')
+			.defaultTo(JSON.stringify(initialDeck))
 			.notNullable();
 
 		table
@@ -43,12 +49,12 @@ exports.up = function(knex) {
 
 		table
 			.integer('max_players')
-			.defaultTo(defaultMaxPlayers)
+			.defaultTo(maxPlayers[0])
 			.notNullable();
 
 		table
 			.jsonb('pot')
-			.defaultTo(JSON.stringify(defaultPot))
+			.defaultTo(JSON.stringify(initialPot))
 			.notNullable();
 
 		table

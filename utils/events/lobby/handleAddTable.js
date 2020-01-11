@@ -10,16 +10,14 @@ const {
 
 const {
 	error_message,
-	lobby_room,
-	update_lobby_tables,
 }	= constants;
 
 module.exports = async (socket, table, callback) => {
 	try {
+		const { handleUpdateLobbyTables }	= require('../../index.js');
 		const table_id = (await tableDb.addTable(table))[0];
 		callback(table_id);
-		const tables = await tableDb.getLobbyTables();
-		return socket.to(lobby_room).emit(update_lobby_tables, tables);
+		return handleUpdateLobbyTables(null, socket, null);
 	} catch (e) {
 		const errMsg = 'Add Table' + e.toString();
 		console.log(errMsg);

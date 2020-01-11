@@ -36,10 +36,8 @@ module.exports = async (io, socket, callback) => {
 			table_chips,
 			table_id,
 		} = tablePlayer;
-		const table = await tableDb.getTable(table_id);
-		const { players } = table;
-		const player = players.find(p => p && p.user_id === leftPlayerUserId);
-		const { position } = player;
+		const { players } = await tableDb.getTable(table_id);
+		const { position } = players.find(p => p && p.user_id === leftPlayerUserId);
 		let user_chips;
 		// if the player was the only one at the table
 		if (players.filter(p => p).length === 1) {
@@ -60,15 +58,14 @@ module.exports = async (io, socket, callback) => {
 			// then remove them from the table
 			await tablePlayerDb.deleteTablePlayer(table_id, leftPlayerUserId);
 			if (callback) callback(user_chips);
-			handleTablePlayerPayloads(io, table, player_left, position);
+			await handleTablePlayerPayloads(io, table_id, player_left, [ position ]);
 			return handleUpdateLobbyTables(io);
 		}
 		// else if action is on player or if player has cards(is in the hand)
 		// show them as having left the table room(not removed yet)
 		await tablePlayerDb.updateInTableRoom(table_id, leftPlayerUserId, false);
-		player.in_table_room = false;
 		if (callback) callback(user_chips);
-		handleTablePlayerPayloads(io, table, player_left);
+		await handleTablePlayerPayloads(io, table_id, player_left, []);
 		return handleUpdateLobbyTables(io);
 	} catch (e) {
 		const errMsg = 'Player Leaves Table' + e.toString();
