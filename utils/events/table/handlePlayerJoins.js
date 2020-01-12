@@ -32,7 +32,7 @@ module.exports = async (io, socket, table_id, callback) => {
 		await handleTablePlayerPayloads(io, table_id, 'player_joined', [ position ]);
 		if (prevPlayersLen === 1 && newPlayersLen === 2) return handleGetNewHand(io, table_id);
 	} catch (e) {
-		const errMsg = 'Player Joins Table' + e.toString();
+		const errMsg = 'Player Joins Table: ' + e.toString();
 		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}

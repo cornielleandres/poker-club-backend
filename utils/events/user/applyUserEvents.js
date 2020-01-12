@@ -82,7 +82,7 @@ const postAuthenticate = async (io, socket) => {
 					// EX 30 will auto-expire the lock after 30 seconds.
 					await redisClient.setAsync(usersKey + user_id, socket.id, 'XX', 'EX', 30);
 				} catch (e) {
-					const errMsg = 'Packet' + e.toString();
+					const errMsg = 'Ping Packet: ' + e.toString();
 					console.log(errMsg);
 					return socket.emit(error_message, errMsg);
 				}
@@ -92,7 +92,7 @@ const postAuthenticate = async (io, socket) => {
 		applyTableEvents(io, socket);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
-		const errMsg = 'Post Authenticate' + e.toString();
+		const errMsg = 'Post Authenticate: ' + e.toString();
 		console.log(errMsg);
 		socket.emit(error_message, errMsg);
 		return socket.disconnect(true);

@@ -36,6 +36,9 @@ module.exports = {
 	totalTimeNormal: 30000,
 	totalTimeTurbo: 15000,
 
+	// errors
+	betGreaterThanCallAmountError: 'Player\'s bet is greater than call amount.',
+
 	// event names
 	error_message: 'error_message',
 

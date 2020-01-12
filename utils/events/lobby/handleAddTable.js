@@ -19,7 +19,7 @@ module.exports = async (socket, table, callback) => {
 		callback(table_id);
 		return handleUpdateLobbyTables(null, socket, null);
 	} catch (e) {
-		const errMsg = 'Add Table' + e.toString();
+		const errMsg = 'Add Table: ' + e.toString();
 		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}

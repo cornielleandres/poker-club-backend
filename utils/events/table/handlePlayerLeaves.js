@@ -38,7 +38,7 @@ module.exports = async (io, socket, callback) => {
 		} = tablePlayer;
 		const { players } = await tableDb.getTable(table_id);
 		const { position } = players.find(p => p && p.user_id === leftPlayerUserId);
-		let user_chips;
+		let user_chips = await userDb.getUserChips(leftPlayerUserId);
 		// if the player was the only one at the table
 		if (players.filter(p => p).length === 1) {
 			// update their user chips with their table chips and delete the table
@@ -68,7 +68,7 @@ module.exports = async (io, socket, callback) => {
 		await handleTablePlayerPayloads(io, table_id, player_left, []);
 		return handleUpdateLobbyTables(io);
 	} catch (e) {
-		const errMsg = 'Player Leaves Table' + e.toString();
+		const errMsg = 'Player Leaves Table: ' + e.toString();
 		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}

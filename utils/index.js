@@ -7,17 +7,20 @@ const applyTableEvents						= require('./events/table/applyTableEvents.js');
 const applyUserEvents							= require('./events/user/applyUserEvents.js');
 const delay												= require('./delay.js');
 const getNextPlayer								= require('./events/table/getNextPlayer.js');
+const getPlayerIfActionOnPlayer		= require('./events/table/getPlayerIfActionOnPlayer.js');
 const handleAddTable							= require('./events/lobby/handleAddTable.js');
 const handleAuthenticate					= require('./socketio/handleAuthenticate.js');
 const handleDisconnect						= require('./socketio/handleDisconnect.js');
 const handleGetLobbyTables				= require('./events/lobby/handleGetLobbyTables.js');
 const handleGetNewCards						= require('./events/table/handleGetNewCards.js');
 const handleGetNewHand						= require('./events/table/handleGetNewHand.js');
+const handlePlayerCalls						= require('./events/table/handlePlayerCalls.js');
 const handlePlayerJoins						= require('./events/table/handlePlayerJoins.js');
 const handlePlayerLeaves					= require('./events/table/handlePlayerLeaves.js');
 const handlePostAuthenticate			= require('./socketio/handlePostAuthenticate.js');
 const handleRemovePlayers					= require('./events/table/handleRemovePlayers.js');
 const handleTablePlayerPayloads		= require('./events/table/handleTablePlayerPayloads.js');
+const handleTakeBlinds						= require('./events/table/handleTakeBlinds.js');
 const handleTokenAuth							= require('./socketio/handleTokenAuth.js');
 const handleUpdateLobbyTables			= require('./events/lobby/handleUpdateLobbyTables.js');
 const isNonEmptyObject						= require('./events/table/isNonEmptyObject.js');
@@ -33,17 +36,20 @@ module.exports = {
 	applyUserEvents,
 	delay,
 	getNextPlayer,
+	getPlayerIfActionOnPlayer,
 	handleAddTable,
 	handleAuthenticate,
 	handleDisconnect,
 	handleGetLobbyTables,
 	handleGetNewCards,
 	handleGetNewHand,
+	handlePlayerCalls,
 	handlePlayerJoins,
 	handlePlayerLeaves,
 	handlePostAuthenticate,
 	handleRemovePlayers,
 	handleTablePlayerPayloads,
+	handleTakeBlinds,
 	handleTokenAuth,
 	handleUpdateLobbyTables,
 	isNonEmptyObject,

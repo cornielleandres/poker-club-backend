@@ -19,12 +19,6 @@ const updateAction = async (table_id, position, trx) => {
 	}
 };
 
-const updateDealerBtn = async (table_id, position, trx) => {
-	const knex = trx ? trx : db;
-	await knex('table-players').where({ table_id, dealer_btn: true }).update({ dealer_btn: false });
-	return knex('table-players').where({ table_id, position }).update({ dealer_btn: true });
-};
-
 const updateEndAction = async (table_id, position, trx) => {
 	const knex = trx ? trx : db;
 	await knex('table-players').where({ table_id, end_action: true }).update({ end_action: false });
@@ -37,6 +31,7 @@ module.exports = {
 	deleteTablePlayer: (table_id, user_id) => db('table-players').where({ table_id, user_id }).del(),
 	getTablePlayerByUserId: async user_id => {
 		const tablePlayer = await db('table-players')
+			.select('action', 'bet', 'cards', 'end_action', 'position', 'table_chips', 'table_id')
 			.where({ user_id })
 			.orderBy('join_date', 'desc')
 			.first();
@@ -44,12 +39,14 @@ module.exports = {
 		return tablePlayer;
 	},
 	getTablePlayersByTableId: table_id => (
-		db('table-players').select('in_table_room', 'position', 'table_chips', 'user_id').where({ table_id })
+		db('table-players')
+			.select('dealer_btn', 'in_table_room', 'position', 'table_chips', 'user_id')
+			.where({ table_id })
 	),
 	getTablePlayersOrderedByPosition: table_id => (
 		db('table-players')
 			.where({ table_id })
-			.select('cards', 'end_action', 'position', 'table_chips')
+			.select('cards', 'dealer_btn', 'end_action', 'position', 'table_chips', 'user_id')
 			.orderBy('position')
 	),
 	joinTable: async (table_id, user_id) => {
@@ -87,19 +84,53 @@ module.exports = {
 			throw new Error(e);
 		}
 	},
+	resetActions: async table_id => {
+		const trx = await db.transaction();
+		try {
+			await updateAction(table_id, null, trx);
+			await updateEndAction(table_id, null, trx);
+			return trx.commit();
+		} catch (e) {
+			await trx.rollback();
+			throw new Error(e);
+		}
+	},
 	resetTablePlayer: (table_id, user_id) => (
 		db('table-players')
 			.update({ action: false, dealer_btn: false, end_action: false, position: 0 })
 			.where({ table_id, user_id })
 	),
+	resetTimerEnd: table_id => (
+		db('table-players').where({ table_id }).havingNotNull('timer_end').update({ timer_end: null })
+	),
+	takePlayerChips: (table_id, user_id, chipsToTake) => (
+		db('table-players')
+			.decrement('table_chips', chipsToTake)
+			.increment('bet', chipsToTake)
+			.where({ table_id, user_id })
+	),
 	updateAction,
+	updateActions: async (table_id, position) => {
+		const trx = await db.transaction();
+		try {
+			await updateAction(table_id, position, trx);
+			await updateEndAction(table_id, position, trx);
+			return trx.commit();
+		} catch (e) {
+			await trx.rollback();
+			throw new Error(e);
+		}
+	},
 	updateCardsByPosition: (table_id, position, cards) => (
 		db('table-players')
 			.update({ cards: JSON.stringify(cards) })
 			.where({ table_id, position })
 			.returning('position')
 	),
-	updateDealerBtn,
+	updateDealerBtn: async (table_id, position) => {
+		await db('table-players').where({ table_id, dealer_btn: true }).update({ dealer_btn: false });
+		return db('table-players').where({ table_id, position }).update({ dealer_btn: true });
+	},
 	updateEndAction,
 	updateInTableRoom: (table_id, user_id, in_table_room) => {
 		// if player is re-joining table, also update the join date
@@ -108,50 +139,5 @@ module.exports = {
 			.update({ in_table_room, join_date: db.fn.now() });
 		// else just update in_table_room
 		return db('table-players').where({ table_id, user_id }).update({ in_table_room });
-	},
-	updateTablePlayersForNewHand: async table_id => {
-		const trx = await db.transaction();
-		try {
-			const tablePlayers = await trx('table-players')
-				.where({ table_id })
-				.select('action', 'dealer_btn', 'end_action', 'position');
-			const prevActionPlayer = tablePlayers.find(p => p.action);
-			// if action was previously on a player, reset the action for the new hand
-			if (prevActionPlayer) await updateAction(table_id, null, trx);
-			const prevEndActionPlayer = tablePlayers.find(p => p.end_action);
-			// if end_action was previously on a player, reset end_action for the new hand
-			if (prevEndActionPlayer) await updateEndAction(table_id, null, trx);
-			const dealerBtnIdx = tablePlayers.findIndex(p => p.dealer_btn);
-			// if there was previously a player OTB, give the btn to the next player
-			if (dealerBtnIdx !== -1) {
-				const tablePlayersLen = tablePlayers.length;
-				const nextDealerBtnIdx = dealerBtnIdx === tablePlayersLen - 1 ? 0 : dealerBtnIdx + 1;
-				const nextPlayerOnBtnPosition = tablePlayers[ nextDealerBtnIdx ].position;
-				await updateDealerBtn(table_id, nextPlayerOnBtnPosition, trx);
-				// if there are > 3 players in the hand, action will be 3 seats after next dealerBtn position
-				let nextActionPlayer;
-				if (tablePlayersLen > 3) {
-					let actionIdx = nextDealerBtnIdx;
-					let i = 3;
-					while(i--) actionIdx = actionIdx === tablePlayersLen - 1 ? 0 : actionIdx + 1;
-					nextActionPlayer = tablePlayers[ actionIdx ];
-				// else action will be on next dealerBtn position
-				} else nextActionPlayer = tablePlayers[ nextDealerBtnIdx ];
-				if (!nextActionPlayer) throw new Error('Could not get next action player for new hand.');
-				const nextActionPosition = nextActionPlayer.position;
-				await updateAction(table_id, nextActionPosition, trx);
-				await updateEndAction(table_id, nextActionPosition, trx);
-			} else {
-				// else, if there was no player OTB,
-				// by default, give actions and dealerBtn to player in position 0
-				await updateAction(table_id, 0, trx);
-				await updateEndAction(table_id, 0, trx);
-				await updateDealerBtn(table_id, 0, trx);
-			}
-			return trx.commit();
-		} catch (e) {
-			await trx.rollback();
-			throw new Error(e);
-		}
 	},
 };

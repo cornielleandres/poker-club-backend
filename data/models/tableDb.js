@@ -118,6 +118,7 @@ module.exports = {
 				hand_id: hand_id + 1,
 				pot: JSON.stringify(initialPot),
 				street: preflop,
-			});
+			})
+			.returning('big_blind');
 	},
 };

@@ -71,7 +71,7 @@ module.exports = async (io, table_id) => {
 			return handleUpdateLobbyTables(io);
 		}
 	} catch (e) {
-		const errMsg = 'Remove Players' + e.toString();
+		const errMsg = 'Remove Players: ' + e.toString();
 		console.log(errMsg);
 		return io.in(table_room + table_id).emit(error_message, errMsg);
 	}

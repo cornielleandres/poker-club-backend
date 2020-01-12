@@ -3,7 +3,8 @@ const db	= require('../dbConfig.js');
 const userDoesNotExistError = user_id => `User id ${ user_id } does not exist.`;
 
 const getUserChips = async (id, trx) => {
-	const user = await trx('users').select('user_chips').where({ id }).first();
+	const knex = trx ? trx : db;
+	const user = await knex('users').select('user_chips').where({ id }).first();
 	if (!user) throw new Error(userDoesNotExistError(id));
 	return user.user_chips;
 };

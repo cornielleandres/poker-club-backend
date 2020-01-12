@@ -14,7 +14,7 @@ exports.up = function(knex) {
 			.notNullable();
 
 		table
-			.string('picture');
+			.text('picture');
 
 		table
 			.integer('user_chips')

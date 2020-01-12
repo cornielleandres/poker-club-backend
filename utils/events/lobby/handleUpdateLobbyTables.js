@@ -25,7 +25,7 @@ module.exports = async (io, socket, callback) => {
 		// else, send the lobby tables to everyone in the lobby room
 		return io.in(lobby_room).emit(update_lobby_tables, lobbyTables);
 	} catch (e) {
-		const errMsg = 'Update Lobby Tables' + e.toString();
+		const errMsg = 'Update Lobby Tables: ' + e.toString();
 		console.log(errMsg);
 		return io.in(lobby_room).emit(error_message, errMsg);
 	}

@@ -12,7 +12,7 @@ module.exports = async (socket, callback) => {
 		const { handleUpdateLobbyTables }	= require('../../index.js');
 		return handleUpdateLobbyTables(null, null, callback);
 	} catch (e) {
-		const errMsg = 'Get Lobby Tables' + e.toString();
+		const errMsg = 'Get Lobby Tables: ' + e.toString();
 		console.log(errMsg);
 		return socket.emit(error_message, errMsg);
 	}
