@@ -30,6 +30,15 @@ exports.up = async (knex) => {
 				.notNullable();
 
 			table
+				.string('hand_description')
+				.defaultTo('')
+				.notNullable();
+
+			table
+				.boolean('hide_cards')
+				.defaultTo(true);
+
+			table
 				.boolean('in_table_room')
 				.defaultTo(true)
 				.notNullable();

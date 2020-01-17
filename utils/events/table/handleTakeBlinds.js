@@ -1,12 +1,19 @@
+// config
+const {
+	constants,
+}	= require('../../../config/index.js');
+
 // databases
 const {
 	tablePlayerDb,
 }	= require('../../../data/models/index.js');
 
-const take_player_chips = 'take_player_chips';
+const {
+	take_player_chips,
+}	= constants;
 
 module.exports = async (io, table_id, big_blind) => {
-	const { delay, handleTablePlayerPayloads }	= require('../../index.js');
+	const { handleTablePlayerPayloads }	= require('../../index.js');
 	const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(table_id);
 	const numOfPlayers = tablePlayers.length;
 	const small_blind = big_blind / 2;
@@ -33,8 +40,7 @@ module.exports = async (io, table_id, big_blind) => {
 	} = smallBlindPlayer;
 	const smallBlindChipsToTake = Math.min(smallBlindTableChips, small_blind);
 	await tablePlayerDb.takePlayerChips(table_id, smallBlindUserId, smallBlindChipsToTake);
-	await handleTablePlayerPayloads(io, table_id, take_player_chips, [ smallBlindPosition ]);
-	await delay(2000);
+	await handleTablePlayerPayloads(io, table_id, take_player_chips, [ smallBlindPosition ], 2000);
 	const {
 		position: bigBlindPosition,
 		table_chips: bigBlindTableChips,

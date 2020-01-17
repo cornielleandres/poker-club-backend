@@ -25,10 +25,12 @@ module.exports = async (io, socket, callback) => {
 			isNonEmptyObject,
 		} = require('../../index.js');
 		const leftPlayerUserId = socket.user_id;
+		let user_chips = await userDb.getUserChips(leftPlayerUserId);
 		let tablePlayer;
 		try {
 			tablePlayer = await tablePlayerDb.getTablePlayerByUserId(leftPlayerUserId);
-		} catch (e) { return; }
+		// if no table player was found, just update their user chips
+		} catch (e) { return callback(user_chips); }
 		const {
 			action,
 			cards,
@@ -38,14 +40,13 @@ module.exports = async (io, socket, callback) => {
 		} = tablePlayer;
 		const { players } = await tableDb.getTable(table_id);
 		const { position } = players.find(p => p && p.user_id === leftPlayerUserId);
-		let user_chips = await userDb.getUserChips(leftPlayerUserId);
 		// if the player was the only one at the table
 		if (players.filter(p => p).length === 1) {
-			// update their user chips with their table chips and delete the table
+			// update their user chips with their table chips
 			user_chips = (await userDb.addToUserChips(leftPlayerUserId, table_chips))[0];
-			await tableDb.deleteTable(table_id);
 			if (callback) callback(user_chips);
-			return handleUpdateLobbyTables(io);
+			await tableDb.deleteTable(table_id); // then delete the table
+			return handleUpdateLobbyTables(io); // then update the lobby tables to reflect this deleted table
 		// else if action is not on player AND player has no cards (from folding or not entering hand)
 		} else if (!action && (!cards.length || !isNonEmptyObject(cards[0]))) {
 			// update their total user chips with the chips they had at the table

@@ -13,10 +13,9 @@ const {
 const {
 	error_message,
 	table_room,
+	update_user_chips,
 	usersKey,
 }	= constants;
-
-const update_user_chips	= 'update_user_chips';
 
 module.exports = async (io, table_id) => {
 	try {

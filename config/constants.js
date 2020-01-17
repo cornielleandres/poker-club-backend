@@ -41,6 +41,11 @@ module.exports = {
 
 	// event names
 	error_message: 'error_message',
+	give_chips_to_player: 'give_chips_to_player',
+	reset_timer_end: 'reset_timer_end',
+	take_player_chips: 'take_player_chips',
+	update_actions: 'update_actions',
+	update_user_chips: 'update_user_chips',
 
 	// room names
 	lobby_room: 'lobby_room',

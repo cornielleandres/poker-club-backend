@@ -1,6 +1,6 @@
 const db	= require('../dbConfig.js');
 
-const userDoesNotExistError = user_id => `User id ${ user_id } does not exist.`;
+const userDoesNotExistError = user_id => `User id #${ user_id } does not exist.`;
 
 const getUserChips = async (id, trx) => {
 	const knex = trx ? trx : db;

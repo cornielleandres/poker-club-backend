@@ -1,3 +1,8 @@
+// config
+const {
+	constants,
+}	= require('../../../config/index.js');
+
 // databases
 const {
 	tableDb,
@@ -11,24 +16,50 @@ const getRandomInt = (min, max) => {
 	return Math.floor(Math.random() * (max - min)) + min;
 };
 
-module.exports = async (io, table_id) => {
-	const { constants }	= require('../../../config/index.js');
-	const { delay, handleTablePlayerPayloads }	= require('../../index.js');
-	const { gameTypes }	= constants;
-	const { deck, game_type, positions } = await tableDb.getDeckGameTypeAndPositions(table_id);
-	let playerCardsLen = 2;
-	const fourHoleCards = game_type === gameTypes[1]; /// gameTypes[1] === PL Omaha
-	if (fourHoleCards) playerCardsLen = 4;
-	const delayTime = fourHoleCards ? 4000 : 2000;
-	for (const position of positions) {
-		const cards = [];
-		for (let j = 0; j < playerCardsLen; j++) {
+const {
+	gameTypes,
+	streets,
+}	= constants;
+
+const {
+	flop,
+}	= streets;
+
+module.exports = {
+	communityCards: async (io, table_id, street) => {
+		const { handleTablePlayerPayloads, isNonEmptyObject }	= require('../../index.js');
+		const numOfCards = street === flop ? 3 : 1;
+		const { community_cards, deck } = await tableDb.getDeckAndCommunityCards(table_id);
+		let firstEmptyIndex = community_cards.findIndex(card => !isNonEmptyObject(card));
+		const defaultDelayTime = 1000;
+		for (let i = 0; i < numOfCards; i++) {
+			const delayTime = i !== numOfCards - 1 ? defaultDelayTime : 0; // do not delay after last loop
 			const randomInt = getRandomInt(0, deck.length);
-			cards.push(deck.splice(randomInt, 1)[0]);
+			const newCard = deck.splice(randomInt, 1)[0];
+			community_cards[firstEmptyIndex] = newCard;
+			await tableDb.updateCommunityCards(table_id, community_cards);
+			await handleTablePlayerPayloads(io, table_id, 'community_card', [ firstEmptyIndex++ ], delayTime);
 		}
-		const payloadPositions = await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
-		if (payloadPositions.length) await tableDb.updateDeck(table_id, deck);
-		await handleTablePlayerPayloads(io, table_id, 'player_cards', payloadPositions);
-		await delay(delayTime);
-	}
+		await tableDb.updateDeck(table_id, deck);
+		return community_cards;
+	},
+	playerCards: async (io, table_id) => {
+		const { handleTablePlayerPayloads }	= require('../../index.js');
+		const { deck, game_type } = await tableDb.getDeckAndGameType(table_id);
+		const { positions } = await tablePlayerDb.getTablePlayerPositionsAsArray(table_id);
+		let playerCardsLen = 2;
+		const fourHoleCards = game_type === gameTypes[1]; /// gameTypes[1] === PL Omaha
+		if (fourHoleCards) playerCardsLen = 4;
+		const delayTime = fourHoleCards ? 4000 : 2000;
+		for (const position of positions) {
+			const cards = [];
+			for (let j = 0; j < playerCardsLen; j++) {
+				const randomInt = getRandomInt(0, deck.length);
+				cards.push(deck.splice(randomInt, 1)[0]);
+			}
+			const payloadPositions = await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
+			await handleTablePlayerPayloads(io, table_id, 'player_cards', payloadPositions, delayTime);
+		}
+		return tableDb.updateDeck(table_id, deck);
+	},
 };

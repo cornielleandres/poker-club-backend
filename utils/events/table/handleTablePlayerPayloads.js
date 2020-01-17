@@ -10,13 +10,15 @@ const {
 	tableDb,
 }	= require('../../../data/models/index.js');
 
+const delay = require('util').promisify(setTimeout);
+
 const {
 	error_message,
 	gameTypes,
 	table_room,
 }	= constants;
 
-module.exports = async (io, table_id, event_name, positions) => {
+module.exports = async (io, table_id, event_name, positions, delayTime) => {
 	try {
 		const { isNonEmptyObject }	= require('../../index.js');
 		const table = await tableDb.getTable(table_id);
@@ -24,7 +26,7 @@ module.exports = async (io, table_id, event_name, positions) => {
 		const hiddenCards = game_type === gameTypes[1] // gameTypes[1] === PL Omaha
 			? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
 			: [ { rank: 0 }, { rank: 0 } ];
-		return io.in(table_room + table_id).clients((err, clients) => {
+		return io.in(table_room + table_id).clients(async (err, clients) => {
 			if (err) return io.in(table_room + table_id).emit(error_message, err.toString());
 			try {
 				const clientsAndPayloads = [];
@@ -37,11 +39,14 @@ module.exports = async (io, table_id, event_name, positions) => {
 						const playerIndex = players.findIndex(p => p && p.user_id === user_id);
 						clientTable.players = players.slice(playerIndex).concat(players.slice(0, playerIndex))
 							.map(p => {
-								// if another player has cards (i.e., they are currently in a hand)
-								if (p && p.user_id !== user_id && p.cards.length && isNonEmptyObject(p.cards[0])) {
-									// show their cards as hidden
-									p.cards = hiddenCards;
-								}
+								// if the following conditions are met, hide the player's cards in the payload
+								if (
+									p // is a player
+									&& p.user_id !== user_id // is not the client player
+									&& p.cards.length // has not folded
+									&& isNonEmptyObject(p.cards[0]) // is currently in the hand
+									&& p.hide_cards // is set to hide their cards
+								) p.cards = hiddenCards;
 								return p;
 							});
 						const payload = { positions, table: clientTable };
@@ -49,6 +54,7 @@ module.exports = async (io, table_id, event_name, positions) => {
 					}
 				});
 				clientsAndPayloads.forEach(c => io.to(c.client).emit(event_name, c.payload));
+				if (delayTime) await delay(delayTime);
 			} catch (e) {
 				const errMsg = 'Table Clients And Payloads for Event: "' + event_name + '": ' + e.toString();
 				console.log(errMsg);

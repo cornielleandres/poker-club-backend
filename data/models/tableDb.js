@@ -6,12 +6,9 @@ const {
 }	= require('../../config/index.js');
 
 const {
-	bigBlinds,
-	gameTypes,
 	initialCommunityCards,
 	initialDeck,
 	initialPot,
-	maxPlayers,
 	streets,
 	tableTypes,
 	totalTimeNormal,
@@ -22,33 +19,30 @@ const {
 	preflop,
 }	= streets;
 
+const tableDoesNotExistError = 'This table does not exist.';
+
 module.exports = {
-	addTable: table => {
-		const { big_blind, game_type, max_players, table_type } = table;
-		if (!bigBlinds.includes(big_blind)) throw new Error(`Big blind "${ big_blind }" not allowed.`);
-		if (!gameTypes.includes(game_type)) throw new Error(`Game type "${ game_type }" not allowed.`);
-		if (!maxPlayers.includes(max_players)) throw new Error(`Max players "${ max_players }" not allowed.`);
-		if (!tableTypes.includes(table_type)) throw new Error(`Table type ${ table_type } not allowed.`);
-		return db('tables').insert(table).returning('id');
-	},
+	addTable: table => db('tables').insert(table).returning('id'),
 	deleteTable: id => db('tables').where({ id }).del(),
-	getDeckGameTypeAndPositions: async id => {
-		const { deck, game_type } = await db('tables').where({ id }).select('deck', 'game_type').first();
-		const { positions } = await db('table-players')
-			.select(db.raw('ARRAY_AGG(position) as positions'))
-			.where({ table_id: id })
+	getBigBlindGameTypeAndMaxPlayers: async (id, trx) => {
+		const knex = trx ? trx : db;
+		const table = await knex('tables')
+			.select('big_blind', 'game_type', 'max_players')
+			.where({ id })
 			.first();
-		return { deck, game_type, positions };
+		if (!table) throw new Error(tableDoesNotExistError);
+		return table;
 	},
+	getCallAmountByTableId: id => db('tables').select('call_amount').where({ id }).first(),
+	getDeckAndCommunityCards: id => db('tables').select('community_cards', 'deck').where({ id }).first(),
+	getDeckAndGameType: id => db('tables').select('deck', 'game_type').where({ id }).first(),
 	getLobbyTables: async () => {
+		const { tablePlayerDb }	= require('./index.js');
 		let lobbyTables = await db('tables')
 			.select('id', 'big_blind', 'game_type', 'max_players', 'table_type')
 			.orderBy('id');
 		const lobbyTableIds = lobbyTables.map(table => table.id);
-		const lobbyTablePlayers = await db('table-players as tp')
-			.select('tp.in_table_room', 'u.picture', 'tp.position', 'tp.table_id', 'tp.user_id')
-			.whereIn('table_id', lobbyTableIds)
-			.join('users as u', 'tp.user_id', 'u.id');
+		const lobbyTablePlayers = await tablePlayerDb.getLobbyTablePlayersByTableIds(lobbyTableIds);
 		lobbyTables = lobbyTables.map(table => {
 			table.players = [];
 			const { id, max_players, players } = table;
@@ -59,54 +53,48 @@ module.exports = {
 		});
 		return lobbyTables;
 	},
+	getStreetAndHandId: async id => db('tables').select('street', 'hand_id').where({ id }).first(),
 	getTable: async id => {
+		const { tablePlayerDb }	= require('./index.js');
 		const table = await db('tables').where({ id }).select(
 			'big_blind',
 			'call_amount',
 			'community_cards',
 			'game_type',
 			'hand_id',
+			'id',
 			'max_players',
 			'pot',
 			'street',
 			'table_type',
 		).first();
-		if (!table) throw new Error('This table does not exist.');
-		const tablePlayers = await db('table-players as tp')
-			.where({ table_id: id })
-			.select(
-				'tp.bet',
-				'tp.action',
-				'tp.cards',
-				'tp.end_action',
-				'tp.dealer_btn',
-				'tp.in_table_room',
-				'u.name',
-				'u.picture',
-				'tp.position',
-				'tp.table_chips',
-				'tp.timer_end',
-				'tp.user_id',
-			)
-			.join('users as u', 'tp.user_id', 'u.id');
+		if (!table) throw new Error(tableDoesNotExistError);
+		const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(id);
 		table.players = [];
 		const { max_players, players, table_type } = table;
 		for (let i = 0; i < max_players; i++) players.push(null);
-		tablePlayers.forEach(user => {
-			const { position } = user;
-			if (user.action) {
-				// tableTypes[1] === Turbo
-				if (table_type === tableTypes[1]) user.total_time = totalTimeTurbo;
-				else user.total_time = totalTimeNormal;
+		tablePlayers.forEach(player => {
+			const { position } = player;
+			if (player.action) {
+				if (table_type === tableTypes[1]) player.total_time = totalTimeTurbo; // tableTypes[1] === Turbo
+				else player.total_time = totalTimeNormal;
 			}
-			players[ position ] = user;
+			players[ position ] = player;
 		});
 		return table;
 	},
 	resetTable: id => (
 		db('tables').update({ call_amount: 0, pot: JSON.stringify(initialPot), street: '' }).where({ id })
 	),
+	updateCallAmount: (id, call_amount) => db('tables').update({ call_amount }).where({ id }),
+	updateCommunityCards: (id, community_cards) => (
+		db('tables').update({ community_cards: JSON.stringify(community_cards) }).where({ id })
+	),
 	updateDeck: (id, deck) => db('tables').update({ deck: JSON.stringify(deck) }).where({ id }),
+	updatePot: (id, pot) => db('tables').update({ pot: JSON.stringify(pot) }).where({ id }),
+	updateStreetAndResetCallAmount: (id, street) => (
+		db('tables').update({ street, call_amount: 0 }).where({ id })
+	),
 	updateTableForNewHand: async id => {
 		const { big_blind, hand_id } = await db('tables').where({ id }).select('big_blind', 'hand_id').first();
 		return db('tables')
@@ -119,6 +107,6 @@ module.exports = {
 				pot: JSON.stringify(initialPot),
 				street: preflop,
 			})
-			.returning('big_blind');
+			.returning([ 'big_blind', 'hand_id', 'street', 'table_type' ]);
 	},
 };
