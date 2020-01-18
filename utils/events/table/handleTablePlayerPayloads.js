@@ -18,14 +18,19 @@ const {
 	table_room,
 }	= constants;
 
-module.exports = async (io, table_id, event_name, positions, delayTime) => {
+module.exports = async (io, table_id, event_name, positions, delayTime, chatMessagePayload) => {
 	try {
 		const { isNonEmptyObject }	= require('../../index.js');
-		const table = await tableDb.getTable(table_id);
-		const { game_type } = table;
-		const hiddenCards = game_type === gameTypes[1] // gameTypes[1] === PL Omaha
-			? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
-			: [ { rank: 0 }, { rank: 0 } ];
+		let table;
+		let hiddenCards;
+		// if sending a chat message, there is no need to get the table
+		if (!chatMessagePayload) {
+			table = await tableDb.getTable(table_id);
+			const { game_type } = table;
+			hiddenCards = game_type === gameTypes[1] // gameTypes[1] === PL Omaha
+				? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
+				: [ { rank: 0 }, { rank: 0 } ];
+		}
 		return io.in(table_room + table_id).clients(async (err, clients) => {
 			if (err) return io.in(table_room + table_id).emit(error_message, err.toString());
 			try {
@@ -33,6 +38,8 @@ module.exports = async (io, table_id, event_name, positions, delayTime) => {
 				clients.forEach(client => {
 					const clientSocket = io.sockets.connected[ client ];
 					if (clientSocket) { // if client is still connected
+						// if sending a chat message, just push the payload to the array
+						if (chatMessagePayload) return clientsAndPayloads.push({ client, payload: chatMessagePayload });
 						const { user_id } = clientSocket;
 						const clientTable = _.cloneDeep(table);
 						const { players } = clientTable;

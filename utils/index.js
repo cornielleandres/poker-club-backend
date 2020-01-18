@@ -10,6 +10,7 @@ const getNextPlayer										= require('./events/table/getNextPlayer.js');
 const getNextStreet										= require('./events/table/getNextStreet.js');
 const getPlayerIfActionOnPlayer				= require('./events/table/getPlayerIfActionOnPlayer.js');
 const handleAddTable									= require('./events/lobby/handleAddTable.js');
+const handleAddToPlayerChat						= require('./events/table/handleAddToPlayerChat.js');
 const handleAuthenticate							= require('./socketio/handleAuthenticate.js');
 const handleDefaultAction							= require('./events/table/handleDefaultAction.js');
 const handleDisconnect								= require('./socketio/handleDisconnect.js');
@@ -51,6 +52,7 @@ module.exports = {
 	getNextStreet,
 	getPlayerIfActionOnPlayer,
 	handleAddTable,
+	handleAddToPlayerChat,
 	handleAuthenticate,
 	handleDefaultAction,
 	handleDisconnect,

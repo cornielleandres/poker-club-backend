@@ -8,18 +8,21 @@ const {
 	table_room,
 }	= constants;
 
-const player_calls	= 'player_calls';
-const player_checks	= 'player_checks';
-const player_folds	= 'player_folds';
-const player_raises	= 'player_raises';
+const add_to_player_chat	= 'add_to_player_chat';
+const player_calls				= 'player_calls';
+const player_checks				= 'player_checks';
+const player_folds				= 'player_folds';
+const player_raises				= 'player_raises';
 
 const _addAllTableEventListeners = (io, socket) => {
 	const {
+		handleAddToPlayerChat,
 		handlePlayerCalls,
 		handlePlayerChecks,
 		handlePlayerFolds,
 		handlePlayerRaises,
 	}	= require('../../index.js');
+	socket.on(add_to_player_chat, (msg, callback) => handleAddToPlayerChat(io, socket, msg, callback));
 	socket.on(player_calls, callback => handlePlayerCalls(io, socket, callback));
 	socket.on(player_checks, callback => handlePlayerChecks(io, socket, callback));
 	socket.on(player_folds, callback => handlePlayerFolds(io, socket, callback));
@@ -27,6 +30,7 @@ const _addAllTableEventListeners = (io, socket) => {
 };
 
 const _removeAllTableEventListeners = socket => {
+	socket.removeAllListeners(add_to_player_chat);
 	socket.removeAllListeners(player_calls);
 	socket.removeAllListeners(player_checks);
 	socket.removeAllListeners(player_folds);

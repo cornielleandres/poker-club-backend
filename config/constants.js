@@ -44,6 +44,7 @@ module.exports = {
 	give_chips_to_player: 'give_chips_to_player',
 	reset_timer_end: 'reset_timer_end',
 	take_player_chips: 'take_player_chips',
+	update_action_chat: 'update_action_chat',
 	update_actions: 'update_actions',
 	update_user_chips: 'update_user_chips',
 
