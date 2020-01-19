@@ -5,6 +5,7 @@ const applySocketAuth									= require('./socketio/applySocketAuth.js');
 const applySocketio										= require('./socketio/applySocketio.js');
 const applyTableEvents								= require('./events/table/applyTableEvents.js');
 const applyUserEvents									= require('./events/user/applyUserEvents.js');
+const delay														= require('./delay.js');
 const distributePotToWinners					= require('./events/table/distributePotToWinners.js');
 const getNextPlayer										= require('./events/table/getNextPlayer.js');
 const getNextStreet										= require('./events/table/getNextStreet.js');
@@ -47,6 +48,7 @@ module.exports = {
 	applySocketio,
 	applyTableEvents,
 	applyUserEvents,
+	delay,
 	distributePotToWinners,
 	getNextPlayer,
 	getNextStreet,

@@ -10,8 +10,6 @@ const {
 	tableDb,
 }	= require('../../../data/models/index.js');
 
-const delay = require('util').promisify(setTimeout);
-
 const {
 	error_message,
 	gameTypes,
@@ -20,7 +18,7 @@ const {
 
 module.exports = async (io, table_id, event_name, positions, delayTime, chatMessagePayload) => {
 	try {
-		const { isNonEmptyObject }	= require('../../index.js');
+		const { delay, isNonEmptyObject }	= require('../../index.js');
 		let table;
 		let hiddenCards;
 		// if sending a chat message, there is no need to get the table
@@ -31,7 +29,7 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 				? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
 				: [ { rank: 0 }, { rank: 0 } ];
 		}
-		return io.in(table_room + table_id).clients(async (err, clients) => {
+		io.in(table_room + table_id).clients((err, clients) => {
 			if (err) return io.in(table_room + table_id).emit(error_message, err.toString());
 			try {
 				const clientsAndPayloads = [];
@@ -61,13 +59,13 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 					}
 				});
 				clientsAndPayloads.forEach(c => io.to(c.client).emit(event_name, c.payload));
-				if (delayTime) await delay(delayTime);
 			} catch (e) {
 				const errMsg = 'Table Clients And Payloads for Event: "' + event_name + '": ' + e.toString();
 				console.log(errMsg);
 				return io.in(table_room + table_id).emit(error_message, errMsg);
 			}
 		});
+		if (delayTime) return delay(delayTime);
 	} catch (e) {
 		const errMsg = 'Table Player Payloads for Event: "' + event_name + '": ' + e.toString();
 		console.log(errMsg);
