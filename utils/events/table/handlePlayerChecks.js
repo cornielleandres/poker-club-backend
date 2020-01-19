@@ -15,6 +15,7 @@ const {
 	reset_timer_end,
 	streets,
 	table_room,
+	update_action_chat,
 }	= constants;
 
 const {
@@ -43,6 +44,8 @@ module.exports = async (io, socket, callback, userId) => {
 		// player's bet can never be greater than the amount they need to call
 		if (bet > call_amount) throw new Error(betGreaterThanCallAmountError);
 		if (callback) callback();
+		const actionChatPayload = { type: 'check', payload: { description: 'checked', user_id } };
+		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');
 		if (!nextActionPlayer) throw new Error('Could not get next action player after check.');
 		const nextActionPosition = nextActionPlayer.position;

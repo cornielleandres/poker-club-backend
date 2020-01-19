@@ -13,6 +13,7 @@ const {
 const {
 	error_message,
 	table_room,
+	update_action_chat,
 	update_user_chips,
 	usersKey,
 }	= constants;
@@ -65,8 +66,19 @@ module.exports = async (io, table_id) => {
 		}
 		// if there were removed players
 		if (removedPlayerPositions.length) {
+			for (const position of removedPlayerPositions) {
+				const { user_id } = tablePlayers.find(p => p.position === position);
+				const actionChatPayload = {
+					type: 'player_removal',
+					payload: {
+						description: 'left the table',
+						user_id,
+					}
+				};
+				await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+			}
 			// update the current table and the lobby tables to reflect the removed players
-			await handleTablePlayerPayloads(io, table_id, 'player_removed', removedPlayerPositions);
+			await handleTablePlayerPayloads(io, table_id, 'player_removed', removedPlayerPositions, 1000);
 			return handleUpdateLobbyTables(io);
 		}
 	} catch (e) {

@@ -16,6 +16,7 @@ const {
 	reset_timer_end,
 	table_room,
 	take_player_chips,
+	update_action_chat,
 }	= constants;
 
 module.exports = async (io, socket, raiseAmount, callback) => {
@@ -56,9 +57,18 @@ module.exports = async (io, socket, raiseAmount, callback) => {
 		// take appropriate chips from player
 		const playerRaise = raiseAmount - playerBet;
 		const chipsToTake = Math.min(table_chips, playerRaise);
-		await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake);
+		const bet = (await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake))[0];
 		await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
 		callback();
+		const actionChatPayload = {
+			type: 'raise',
+			payload: {
+				amount: bet,
+				description: call_amount ? 'raised to' : 'bet',
+				user_id,
+			},
+		};
+		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		// update end_action to the player that made the raise
 		await tablePlayerDb.updateEndAction(table_id, playerPosition);
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');

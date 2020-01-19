@@ -25,7 +25,7 @@ module.exports = async (io, table_id, table_type, action, street, hand_id) => {
 	const newTimerEnd = new Date();
 	newTimerEnd.setMilliseconds(newTimerEnd.getMilliseconds() + total_time);
 	await tablePlayerDb.updateTimerEnd(table_id, action, newTimerEnd);
-	await handleTablePlayerPayloads(io, table_id, 'update_player_timer');
+	await handleTablePlayerPayloads(io, table_id, 'update_player_timer', [ action ]);
 	return setTimeout(async () => {
 		try {
 			const currentTable = await tableDb.getStreetAndHandId(table_id);

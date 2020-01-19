@@ -163,13 +163,14 @@ module.exports = {
 			.decrement('table_chips', chipsToTake)
 			.increment('bet', chipsToTake)
 			.where({ table_id, user_id })
+			.returning('bet')
 	),
 	updateAction,
 	updateCardsByPosition: (table_id, position, cards) => (
 		db('table-players')
 			.update({ cards: JSON.stringify(cards) })
 			.where({ table_id, position })
-			.returning('position')
+			.returning([ 'position', 'user_id' ])
 	),
 	updateDealerBtn: async (table_id, position) => {
 		await db('table-players').update({ dealer_btn: false }).where({ table_id, dealer_btn: true });

@@ -13,6 +13,7 @@ const {
 	error_message,
 	give_chips_to_player,
 	table_room,
+	update_action_chat,
 }	= constants;
 
 module.exports = async (io, table_id, pot, winners, players, omaha) => {
@@ -25,7 +26,8 @@ module.exports = async (io, table_id, pot, winners, players, omaha) => {
 			const currPot = pot[i];
 			const currWinners = winners[i];
 			const currWinnersLen = currWinners.length;
-			const amountWonPerPlayer = Math.floor(currPot.amount / currWinnersLen);
+			const currPotAmount = currPot.amount;
+			const amountWonPerPlayer = Math.floor(currPotAmount / currWinnersLen);
 			// if players array is present, it means cards possibly need to be revealed
 			if (players) {
 				const filterHiddenCards = p => p.hide_cards;
@@ -53,6 +55,20 @@ module.exports = async (io, table_id, pot, winners, players, omaha) => {
 					.giveChipsToPlayer(table_id, currWinners[j].user_id, amountWonPerPlayer))[0];
 				currPot.amount -= amountWonPerPlayer;
 				await tableDb.updatePot(table_id, pot);
+				// when on the first winner of the side pot, send the action chat payload to announce the winner(s)
+				if (j === 0) {
+					const handInfo = currWinners[j].handInfo;
+					const actionChatPayload = {
+						type: 'given_pot',
+						payload: {
+							amount: currPotAmount,
+							// no handInfo means player won pot without going to showdown(i.e. someone folded)
+							description: handInfo ? handInfo.description : null,
+							user_ids: currWinners.map(w => w.user_id),
+						},
+					};
+					await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+				}
 				await handleTablePlayerPayloads(io, table_id, give_chips_to_player, [ position ], 2000);
 			}
 			const oddChip = currPot.amount;

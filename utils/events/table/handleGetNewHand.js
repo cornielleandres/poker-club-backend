@@ -12,6 +12,7 @@ const {
 const {
 	error_message,
 	table_room,
+	update_action_chat,
 	update_actions,
 }	= constants;
 
@@ -19,6 +20,7 @@ const new_hand = 'new_hand';
 
 module.exports = async (io, table_id) => {
 	const {
+		delay,
 		handleGetNewCards,
 		handleRemovePlayers,
 		handleTablePlayerPayloads,
@@ -71,9 +73,12 @@ module.exports = async (io, table_id) => {
 		await tablePlayerDb.resetHandDescriptions(table_id);
 		await tablePlayerDb.resetHideCards(table_id);
 		await handleTablePlayerPayloads(io, table_id, new_hand);
+		const actionChatPayload = { type: 'new_hand', payload: hand_id };
+		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, 1000, actionChatPayload);
 		await handleGetNewCards.playerCards(io, table_id);
 		await handleTakeBlinds(io, table_id, big_blind);
 		await tablePlayerDb.updateEndAction(table_id, nextActionsPosition);
+		await delay(3000); // delay before starting the timer
 		return handleUpdateActionAndTimer(io, table_id, nextActionsPosition, table_type, street, hand_id);
 	} catch (e) {
 		const errMsg = 'Get New Hand: ' + e.toString();

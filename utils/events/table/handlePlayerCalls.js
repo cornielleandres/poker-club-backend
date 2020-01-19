@@ -15,6 +15,7 @@ const {
 	reset_timer_end,
 	table_room,
 	take_player_chips,
+	update_action_chat,
 }	= constants;
 
 module.exports = async (io, socket, callback) => {
@@ -45,6 +46,15 @@ module.exports = async (io, socket, callback) => {
 		await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake);
 		await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
 		callback();
+		const actionChatPayload = {
+			type: 'call',
+			payload: {
+				amount: chipsToTake,
+				description: 'called',
+				user_id,
+			},
+		};
+		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');
 		// if there is no next action player, that means that everyone at the table is all in
 		if (!nextActionPlayer) return handleShowdown(io, table_id);
