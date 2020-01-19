@@ -19,10 +19,10 @@ module.exports = async (io, table_id, players, community_cards, pot, omaha) => {
 		const potPlayers = playersWithCards.filter(p => sidePot.user_ids.includes(p.user_id));
 		// check to see who has the best hand ranking
 		const maxRanking = potPlayers.reduce((maxRanking, p) => {
-			const currHandRanking = p.hand.handRanking;
+			const currHandRanking = p.handInfo.handRanking;
 			return maxRanking = Math.max(currHandRanking, maxRanking);
 		}, 0);
-		const maxRankingPlayers = potPlayers.filter(p => p.hand.handRanking === maxRanking);
+		const maxRankingPlayers = potPlayers.filter(p => p.handInfo.handRanking === maxRanking);
 		// if one player has the best hand ranking
 		if (maxRankingPlayers.length === 1) return winners.push(maxRankingPlayers);
 		// else if there are multiple players with the same hand ranking

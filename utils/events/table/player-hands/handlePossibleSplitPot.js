@@ -1,6 +1,6 @@
 module.exports = (players, winners) => {
 	const { getMaxRank, handleCheckKickers } = require('./index.js');
-	const { handRanking } = players[0].hand;
+	const { handRanking } = players[0].handInfo;
 	switch(handRanking) {
 	// if players have a royal flush, its a split pot
 	case 9:
@@ -10,19 +10,19 @@ module.exports = (players, winners) => {
 	case 4: {
 		// check to see who has the best straight
 		const maxStraightRank = getMaxRank(players, 0);
-		const maxStraightPlayers = players.filter(p => p.hand.hand[0].rank === maxStraightRank);
+		const maxStraightPlayers = players.filter(p => p.handInfo.hand[0].rank === maxStraightRank);
 		return winners.push(maxStraightPlayers);
 	}
 	// if players have a full house
 	case 6: {
 		// check to see who has the best 'trips' part of the full house
 		const maxTripsRank = getMaxRank(players, 0);
-		const maxTripsPlayers = players.filter(p => p.hand.hand[0].rank === maxTripsRank);
+		const maxTripsPlayers = players.filter(p => p.handInfo.hand[0].rank === maxTripsRank);
 		// if one player has the best 'trips' part of the full house
 		if (maxTripsPlayers.length === 1) return winners.push(maxTripsPlayers);
 		// else check to see who has the best 'pair' part of the full house
 		const maxPairRank = getMaxRank(maxTripsPlayers, 3);
-		const maxPairPlayers = players.filter(p => p.hand.hand[3].rank === maxPairRank);
+		const maxPairPlayers = players.filter(p => p.handInfo.hand[3].rank === maxPairRank);
 		return winners.push(maxPairPlayers);
 	}
 	// if players have a flush
@@ -36,7 +36,7 @@ module.exports = (players, winners) => {
 			// figure out the current max flush
 			maxFlushRank = getMaxRank(maxFlushPlayers, i);
 			// filter out the players that have this current max flush
-			maxFlushPlayers = maxFlushPlayers.filter(p => p.hand.hand[i].rank === maxFlushRank);
+			maxFlushPlayers = maxFlushPlayers.filter(p => p.handInfo.hand[i].rank === maxFlushRank);
 			// if one player has this max flush, return them as the winner
 			if (maxFlushPlayers.length === 1) return winners.push(maxFlushPlayers);
 			// else continue in the loop to the next max flush
@@ -49,13 +49,13 @@ module.exports = (players, winners) => {
 	case 2: {
 		// check to see who has the best big pair
 		const maxBigPairRank = getMaxRank(players, 0);
-		const maxBigPairPlayers = players.filter(p => p.hand.hand[0].rank === maxBigPairRank);
+		const maxBigPairPlayers = players.filter(p => p.handInfo.hand[0].rank === maxBigPairRank);
 		// if one player has the best big pair
 		if (maxBigPairPlayers.length === 1) return winners.push(maxBigPairPlayers);
 		// else check to see who has the best small pair
 		const maxSmallPairRank = getMaxRank(maxBigPairPlayers, 2);
 		const maxSmallPairPlayers = maxBigPairPlayers
-			.filter(p => p.hand.hand[2].rank === maxSmallPairRank);
+			.filter(p => p.handInfo.hand[2].rank === maxSmallPairRank);
 		// if one player has the best small pair
 		if (maxSmallPairPlayers.length === 1) return winners.push(maxSmallPairPlayers);
 		// else check to see who has the best kicker
@@ -68,7 +68,7 @@ module.exports = (players, winners) => {
 	default: { // high card
 		// check to see who has the best rank
 		const maxRank = getMaxRank(players, 0);
-		const maxRankPlayers = players.filter(p => p.hand.hand[0].rank === maxRank);
+		const maxRankPlayers = players.filter(p => p.handInfo.hand[0].rank === maxRank);
 		// if one player has the best rank
 		if (maxRankPlayers.length === 1) return winners.push(maxRankPlayers);
 		// else check to see who has the best kicker(s)

@@ -29,15 +29,15 @@ module.exports = (players, communityCards, omaha) => {
 				return maxRank = Math.max(h.handRanking, maxRank);
 			}, 0);
 			const maxRankingHands = hands.filter(h => h.handRanking === maxRanking);
-			if (maxRankingHands.length === 1) p.hand = maxRankingHands[0];
+			if (maxRankingHands.length === 1) p.handInfo = maxRankingHands[0];
 			// else if there are multiple hands with the same hand ranking
 			else {
 				const maxHandsArr = maxRankingHands.map(hand => ({ hand }));
 				const winners = [];
 				handlePossibleSplitPot(maxHandsArr, winners);
-				p.hand = winners[0][0].hand;
+				p.handInfo = winners[0][0].handInfo;
 			}
 		});
 	} 
-	return players.forEach(p => p.hand = getPlayerHand(p.cards.concat(communityCards)));
+	return players.forEach(p => p.handInfo = getPlayerHand(p.cards.concat(communityCards)));
 };

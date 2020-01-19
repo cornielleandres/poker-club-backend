@@ -17,9 +17,8 @@ module.exports = async (io, table_id, players) => {
 	try {
 		const { handleTablePlayerPayloads }	= require('../../../index.js');
 		for (const player of players) {
-			const { hand, position, user_id } = player;
-			const hand_description = hand.description;
-			await tablePlayerDb.updateHandDescription(table_id, user_id, hand_description);
+			const { handInfo, position, user_id } = player;
+			await tablePlayerDb.updateHandDescription(table_id, user_id, handInfo.description);
 			await handleTablePlayerPayloads(io, table_id, 'hand_description', [ position ], 2000);
 		}
 	} catch (e) {
