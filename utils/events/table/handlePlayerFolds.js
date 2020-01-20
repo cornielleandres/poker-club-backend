@@ -76,7 +76,7 @@ module.exports = async (io, socket, callback, userId) => {
 			// afterwards, get a new hand
 			if (playersWithCardsLeft.length === 1) {
 				const omaha = game_type === gameTypes[1];
-				await handleUpdatePotAndResetBets(io, table_id, pot);
+				await handleUpdatePotAndResetBets(io, table_id, pot, true);
 				const playerToReceivePot = playersWithCardsLeft[0];
 				const winners = [];
 				let potLen = pot.length;

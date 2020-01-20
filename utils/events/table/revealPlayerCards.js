@@ -11,6 +11,7 @@ const {
 const {
 	error_message,
 	table_room,
+	update_action_chat,
 }	= constants;
 
 module.exports = async (io, table_id, playerCardsToReveal, omaha) => {
@@ -18,8 +19,11 @@ module.exports = async (io, table_id, playerCardsToReveal, omaha) => {
 		const { handleTablePlayerPayloads }	= require('../../index.js');
 		const delayTime = omaha ? 4000 : 2000;
 		for (const player of playerCardsToReveal) {
-			await tablePlayerDb.updateHideCards(table_id, player.user_id, false);
-			await handleTablePlayerPayloads(io, table_id, 'reveal_player_cards', [ player.position ], delayTime);
+			const { position, user_id } = player;
+			await tablePlayerDb.updateHideCards(table_id, user_id, false);
+			const actionChatPayload = { type: 'shown_player_cards', payload: { user_id } };
+			await handleTablePlayerPayloads(io, table_id, 'reveal_player_cards', [ position ], delayTime);
+			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		}
 	} catch (e) {
 		const errMsg = 'Reveal Player Cards Error: ' + e.toString();
