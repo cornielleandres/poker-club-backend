@@ -31,7 +31,10 @@ module.exports = async (io, socket, callback) => {
 		try {
 			tablePlayer = await tablePlayerDb.getTablePlayerByUserId(user_id);
 		// if no table player was found, just update their user chips
-		} catch (e) { return callback(user_chips); }
+		} catch (e) {
+			if (callback) return callback(user_chips);
+			return;
+		}
 		const {
 			action,
 			cards,
