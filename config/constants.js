@@ -6,7 +6,7 @@ const s = 'spade';
 module.exports = {
 	// default and initial values
 	bigBlinds: [ 10, 20, 40, 80, 100 ],
-	gameTypes: [ 'NL Hold Em', 'PL Omaha' ],
+	gameTypes: [ 'NL Hold Em', 'PL Omaha', 'Crazy Pineapple' ],
 	initialCommunityCards: [ {}, {}, {}, {}, {} ],
 	initialDeck: [
 		{ rank: 2, suit: c },	{ rank: 3, suit: c },	{ rank: 4, suit: c },	{ rank: 5, suit: c },
@@ -34,7 +34,7 @@ module.exports = {
 	streets: { preflop: 'preflop', flop: 'flop', turn: 'turn', river: 'river' },
 	tableTypes: [ 'Normal', 'Turbo' ],
 	totalTimeNormal: 30000,
-	totalTimeTurbo: 15000,
+	totalTimeTurbo: 16000,
 
 	// errors
 	betGreaterThanCallAmountError: 'Player\'s bet is greater than call amount.',
