@@ -25,6 +25,10 @@ exports.up = async (knex) => {
 				.notNullable();
 
 			table
+				.datetime('discard_timer_end')
+				.defaultTo(null);
+
+			table
 				.boolean('end_action')
 				.defaultTo(false)
 				.notNullable();
