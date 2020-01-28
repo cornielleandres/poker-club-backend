@@ -69,10 +69,10 @@ module.exports = {
 		const { handleTablePlayerPayloads, redisClient }	= require('../../index.js');
 		const { deck, game_type } = await tableDb.getDeckAndGameType(table_id);
 		const { positions } = await tablePlayerDb.getTablePlayerPositionsAsArray(table_id);
-		let playerCardsLen = 2;
-		const fourHoleCards = game_type === gameTypes[1]; /// gameTypes[1] === PL Omaha
-		if (fourHoleCards) playerCardsLen = 4;
-		const delayTime = fourHoleCards ? 4000 : 2000;
+		const playerCardsLen = game_type === gameTypes[0] ? 2 // NL Hold 'Em
+			: game_type === gameTypes[1] ? 4 // PL Omaha
+				: 3; // Crazy Pineapple
+		const delayTime = playerCardsLen * 1000;
 		for (const position of positions) {
 			const cards = [];
 			for (let j = 0; j < playerCardsLen; j++) {

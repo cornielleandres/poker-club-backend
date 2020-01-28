@@ -47,7 +47,7 @@ module.exports = async (io, socket, raiseAmount, callback) => {
 		} = await tableDb.getTable(table_id);
 		// player's bet can never be greater than the amount they need to call
 		if (playerBet > call_amount) throw new Error(betGreaterThanCallAmountError);
-		if (game_type === gameTypes[1]) { // gameTypes[1] === PL Omaha
+		if (game_type === gameTypes[1]) { // PL Omaha
 			const lastPotAmount = pot[ pot.length - 1 ].amount;
 			const allBets = players.reduce((bets, player) => player ? bets += player.bet : bets, 0);
 			if (raiseAmount > allBets + (call_amount - playerBet) + lastPotAmount) {

@@ -42,6 +42,8 @@ module.exports = {
 	// event names
 	error_message: 'error_message',
 	give_chips_to_player: 'give_chips_to_player',
+	remove_card: 'remove_card',
+	reset_discard_timer_end: 'reset_discard_timer_end',
 	reset_timer_end: 'reset_timer_end',
 	take_player_chips: 'take_player_chips',
 	update_action_chat: 'update_action_chat',

@@ -7,12 +7,12 @@ const {
 	maxPlayers,
 }	= constants;
 
-module.exports = async (io, table_id, players, community_cards, pot, omaha) => {
+module.exports = async (io, table_id, players, community_cards, pot, game_type) => {
 	const { isNonEmptyObject }	= require('../../../index.js');
 	const { getPlayerHands, handlePossibleSplitPot, updateHandDescriptions }	= require('./index.js');
 	const defaultMaxPlayers = maxPlayers[0];
 	const playersWithCards = players.filter(p => p && p.cards.length && isNonEmptyObject(p.cards[0]));
-	getPlayerHands(playersWithCards, community_cards, omaha);
+	getPlayerHands(playersWithCards, community_cards, game_type);
 	await updateHandDescriptions(io, table_id, playersWithCards);
 	const winners = [];
 	pot.forEach(sidePot => {

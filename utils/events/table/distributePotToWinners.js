@@ -16,7 +16,7 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, table_id, pot, winners, players, omaha) => {
+module.exports = async (io, table_id, pot, winners, players, game_type) => {
 	try {
 		const { handleTablePlayerPayloads, revealPlayerCards }	= require('../../index.js');
 		const potLen = pot.length;
@@ -47,7 +47,7 @@ module.exports = async (io, table_id, pot, winners, players, omaha) => {
 						.slice(0, firstWinnerIdx)
 						.map(mapToPositionAndUserId)
 						.concat(currWinners.filter(filterHiddenCards).map(mapToPositionAndUserId));
-					await revealPlayerCards(io, table_id, playerCardsToReveal, omaha);
+					await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
 				}
 			}
 			for (let j = 0; j < currWinnersLen; j++) {

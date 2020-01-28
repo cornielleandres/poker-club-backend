@@ -10,13 +10,15 @@ const {
 
 const {
 	error_message,
+	gameTypes,
 	table_room,
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, table_id, playerCardsToReveal, omaha) => {
+module.exports = async (io, table_id, playerCardsToReveal, game_type) => {
 	try {
 		const { handleTablePlayerPayloads }	= require('../../index.js');
+		const omaha = game_type === gameTypes[1];
 		const delayTime = omaha ? 4000 : 2000;
 		for (const player of playerCardsToReveal) {
 			const { position, user_id } = player;

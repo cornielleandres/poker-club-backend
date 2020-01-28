@@ -11,11 +11,13 @@ const {
 
 const {
 	error_message,
+	gameTypes,
 	streets,
 	table_room,
 }	= constants;
 
 const {
+	flop,
 	river,
 }	= streets;
 
@@ -25,6 +27,7 @@ module.exports = async (io, table, updatePotAndResetBets) => {
 		const {
 			getNextPlayer,
 			getNextStreet,
+			handleDiscardTimers,
 			handleGetNewCards,
 			handleShowdown,
 			handleUpdateActionAndTimer,
@@ -32,6 +35,7 @@ module.exports = async (io, table, updatePotAndResetBets) => {
 			isNonEmptyObject,
 		} = require('../../index.js');
 		const {
+			game_type,
 			hand_id,
 			id,
 			pot,
@@ -49,22 +53,37 @@ module.exports = async (io, table, updatePotAndResetBets) => {
 		// with no further user input
 		const players = await tablePlayerDb.getTablePlayersOrderedByPosition(table_id);
 		// filter out the players with cards in front of them (are still in the hand)
-		const playersWithCards = players.filter(c => c.cards.length && isNonEmptyObject(c.cards[0]));
+		const playersWithCards = players.filter(p => p.cards.length && isNonEmptyObject(p.cards[0]));
 		const allNonZeroTableChips = playersWithCards.filter(p => p.table_chips);
 		if (allNonZeroTableChips.length < 2) return handleShowdown(io, table_id);
-		// else if there are at least 2 live players still left
-		// update to the next street and reset call_amount to 0
+		// if there are at least 2 live players still left:
 		const nextStreet = getNextStreet(street);
-		await tableDb.updateStreetAndResetCallAmount(table_id, nextStreet);
-		// update the community cards accordingly with the new street
-		await handleGetNewCards.communityCards(io, table_id, nextStreet);
-		// update both actions and timer to be on UTG player (player after dealer_btn with chips still left)
-		const utgPlayer = await getNextPlayer(table_id, 'dealer_btn');
-		if (!utgPlayer) throw new Error('No UTG player found.');
-		const utgPosition = utgPlayer.position;
-		await tablePlayerDb.resetActions(table_id);
-		await tablePlayerDb.updateEndAction(table_id, utgPosition);
-		return handleUpdateActionAndTimer(io, table_id, utgPosition, table_type, street, hand_id);
+		const updateStreetCardsTimerAndActions = async () => {
+			// update to the next street and reset call_amount to 0
+			await tableDb.updateStreetAndResetCallAmount(table_id, nextStreet);
+			// update the community cards accordingly with the new street
+			await handleGetNewCards.communityCards(io, table_id, nextStreet);
+			// update both actions and timer to be on UTG player (player after dealer_btn with chips still left)
+			const utgPlayer = await getNextPlayer(table_id, 'dealer_btn');
+			if (!utgPlayer) throw new Error('No UTG player found.');
+			const utgPosition = utgPlayer.position;
+			await tablePlayerDb.resetActions(table_id);
+			await tablePlayerDb.updateEndAction(table_id, utgPosition);
+			return handleUpdateActionAndTimer(io, table_id, utgPosition, table_type, street, hand_id);
+		};
+		const crazyPineapple = gameTypes[2];
+		// if playing Crazy Pineapple, and going from flop to turn,
+		// have players in hand discard one of their cards
+		if (game_type === crazyPineapple && street === flop) {
+			return handleDiscardTimers(
+				io,
+				table_id,
+				table_type,
+				playersWithCards,
+				updateStreetCardsTimerAndActions,
+			);
+		}
+		return updateStreetCardsTimerAndActions();
 	} catch (e) {
 		const errMsg = 'End of Action Error: ' + e.toString();
 		console.log(errMsg);

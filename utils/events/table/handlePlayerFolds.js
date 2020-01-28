@@ -12,7 +12,6 @@ const {
 const {
 	betGreaterThanCallAmountError,
 	error_message,
-	gameTypes,
 	reset_timer_end,
 	table_room,
 	update_action_chat,
@@ -75,13 +74,12 @@ module.exports = async (io, socket, callback, userId) => {
 			// that player will consequently take down the pot,
 			// afterwards, get a new hand
 			if (playersWithCardsLeft.length === 1) {
-				const omaha = game_type === gameTypes[1];
 				await handleUpdatePotAndResetBets(io, table_id, pot, true);
 				const playerToReceivePot = playersWithCardsLeft[0];
 				const winners = [];
 				let potLen = pot.length;
 				while(potLen--) winners.push([ playerToReceivePot ]);
-				await distributePotToWinners(io, table_id, pot, winners, null, omaha);
+				await distributePotToWinners(io, table_id, pot, winners, null, game_type);
 				return handleGetNewHand(io, table_id);
 			} else {
 				// else if the next action falls on the player who ends the action(end_action)

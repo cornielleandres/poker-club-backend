@@ -11,7 +11,6 @@ const {
 
 const {
 	error_message,
-	gameTypes,
 	streets,
 	table_room,
 }	= constants;
@@ -39,7 +38,6 @@ module.exports = async (io, table_id) => {
 		let { community_cards } = table;
 		// take all the bets made on this round of betting and update the pot with them
 		await handleUpdatePotAndResetBets(io, table_id, pot);
-		const omaha = game_type === gameTypes[1];
 		const endActionIndex = players.findIndex(p => p && p.end_action);
 		// reorder table players to start with player in end_action position
 		const reorderedPlayers = players.slice(endActionIndex).concat(players.slice(0, endActionIndex));
@@ -49,7 +47,7 @@ module.exports = async (io, table_id) => {
 			const playerCardsToReveal = reorderedPlayers
 				.filter(p => p && p.cards.length && isNonEmptyObject(p.cards[0]))
 				.map(p => ({ position: p.position, user_id: p.user_id }));
-			await revealPlayerCards(io, table_id, playerCardsToReveal, omaha);
+			await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
 			// run out the streets here
 			let nextStreet = getNextStreet(street);
 			do {
@@ -62,8 +60,8 @@ module.exports = async (io, table_id) => {
 			} while (nextStreet !== preflop);
 		}
 		const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(table_id);
-		const winners = await getWinners(io, table_id, tablePlayers, community_cards, pot, omaha);
-		await distributePotToWinners(io, table_id, pot, winners, tablePlayers, omaha);
+		const winners = await getWinners(io, table_id, tablePlayers, community_cards, pot, game_type);
+		await distributePotToWinners(io, table_id, pot, winners, tablePlayers, game_type);
 		return handleGetNewHand(io, table_id);
 	} catch (e) {
 		const errMsg = 'Showdown Error: ' + e.toString();

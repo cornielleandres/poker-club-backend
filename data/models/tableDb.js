@@ -73,11 +73,16 @@ module.exports = {
 		table.players = [];
 		const { max_players, players, table_type } = table;
 		for (let i = 0; i < max_players; i++) players.push(null);
+		const turboTableType = tableTypes[1];
 		tablePlayers.forEach(player => {
 			const { position } = player;
-			if (player.action) {
-				if (table_type === tableTypes[1]) player.total_time = totalTimeTurbo; // tableTypes[1] === Turbo
+			if (player.timer_end) {
+				if (table_type === turboTableType) player.total_time = totalTimeTurbo;
 				else player.total_time = totalTimeNormal;
+			}
+			if (player.discard_timer_end) {
+				if (table_type === turboTableType) player.discard_total_time = totalTimeTurbo;
+				else player.discard_total_time = totalTimeNormal;
 			}
 			players[ position ] = player;
 		});

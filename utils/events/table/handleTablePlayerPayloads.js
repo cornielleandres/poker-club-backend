@@ -12,7 +12,6 @@ const {
 
 const {
 	error_message,
-	gameTypes,
 	table_room,
 }	= constants;
 
@@ -20,15 +19,8 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 	try {
 		const { delay, isNonEmptyObject }	= require('../../index.js');
 		let table;
-		let hiddenCards;
-		// if sending a chat message, there is no need to get the table
-		if (!chatMessagePayload) {
-			table = await tableDb.getTable(table_id);
-			const { game_type } = table;
-			hiddenCards = game_type === gameTypes[1] // gameTypes[1] === PL Omaha
-				? [ { rank: 0 }, { rank: 0 }, { rank: 0 }, { rank: 0 } ]
-				: [ { rank: 0 }, { rank: 0 } ];
-		}
+		// getting the table is only necessary if NOT sending a chat message
+		if (!chatMessagePayload) table = await tableDb.getTable(table_id);
 		io.in(table_room + table_id).clients((err, clients) => {
 			if (err) return io.in(table_room + table_id).emit(error_message, err.toString());
 			try {
@@ -51,7 +43,7 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 									&& p.cards.length // has not folded
 									&& isNonEmptyObject(p.cards[0]) // is currently in the hand
 									&& p.hide_cards // is set to hide their cards
-								) p.cards = hiddenCards;
+								) p.cards = p.cards.map(() => ({ rank: 0 })); // map to hidden cards
 								return p;
 							});
 						const payload = { positions, table: clientTable };

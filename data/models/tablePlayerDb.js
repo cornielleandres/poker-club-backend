@@ -19,6 +19,14 @@ const getTablePlayerPositionsAsArray = (table_id, trx) => {
 		.first();
 };
 
+const resetDiscardTimerEnd = (table_id, positions) => (
+	db('table-players')
+		.update({ discard_timer_end: null })
+		.whereIn('position', positions)
+		.andWhere({ table_id })
+		.havingNotNull('discard_timer_end')
+);
+
 const resetTimerEnd = table_id => (
 	db('table-players').update({ timer_end: null }).where({ table_id }).havingNotNull('timer_end')
 );
@@ -56,6 +64,9 @@ module.exports = {
 			.whereIn('table_id', tableIds)
 			.join('users as u', 'tp.user_id', 'u.id')
 	),
+	getPlayerCardsAndPositionsByTableId: table_id => (
+		db('table-players').select('cards', 'position').where({ table_id })
+	),
 	getTablePlayerByUserId: async user_id => {
 		const tablePlayer = await db('table-players')
 			.select('action', 'bet', 'cards', 'end_action', 'position', 'table_chips', 'table_id')
@@ -78,6 +89,7 @@ module.exports = {
 				'tp.bet',
 				'tp.cards',
 				'tp.dealer_btn',
+				'tp.discard_timer_end',
 				'tp.end_action',
 				'tp.hand_description',
 				'tp.hide_cards',
@@ -123,7 +135,16 @@ module.exports = {
 			const position = positions ? positionOrderToJoin.find(p => !positions.includes(p)) : 0;
 			const newTablePlayer = { position, table_chips, table_id, user_id };
 			// gameTypes[1] === PL Omaha
-			if (game_type === gameTypes[1]) newTablePlayer.cards = JSON.stringify([ {}, {}, {}, {} ]);
+			switch(game_type) {
+			case gameTypes[1]: // PL Omaha
+				newTablePlayer.cards = JSON.stringify([ {}, {}, {}, {} ]);
+				break;
+			case gameTypes[2]: // Crazy Pineapple
+				newTablePlayer.cards = JSON.stringify([ {}, {}, {} ]);
+				break;
+			default: // default is NL Hold 'Em
+				break;
+			}
 			await trx('table-players').insert(newTablePlayer);
 			await trx.commit();
 			return user_chips;
@@ -146,6 +167,7 @@ module.exports = {
 	resetBets: async table_id => (
 		db('table-players').update({ bet: 0 }).where({ table_id }).andWhere('bet', '>', 0)
 	),
+	resetDiscardTimerEnd,
 	resetHandDescriptions: table_id => (
 		db('table-players').update({ hand_description: '' }).where({ table_id })
 	),
@@ -172,6 +194,13 @@ module.exports = {
 			.where({ table_id, position })
 			.returning([ 'position', 'user_id' ])
 	),
+	updateDiscardTimerEnd: async (table_id, positions, discard_timer_end) => {
+		await resetDiscardTimerEnd(table_id, positions);
+		return db('table-players')
+			.update({ discard_timer_end })
+			.whereIn('position', positions)
+			.andWhere({ table_id });
+	},
 	updateDealerBtn: async (table_id, position) => {
 		await db('table-players').update({ dealer_btn: false }).where({ table_id, dealer_btn: true });
 		return db('table-players').update({ dealer_btn: true }).where({ table_id, position });

@@ -1,6 +1,15 @@
-module.exports = (players, communityCards, omaha) => {
+// config
+const {
+	constants,
+}	= require('../../../../config/index.js');
+
+const {
+	gameTypes,
+}	= constants;
+
+module.exports = (players, communityCards, game_type) => {
 	const { getPlayerHand, handlePossibleSplitPot }	= require('./index.js');
-	if (omaha) {
+	if (game_type === gameTypes[1]) { // PL Omaha
 		const communityCardsLen = communityCards.length;
 		return players.forEach(p => {
 			const hands = [];
@@ -25,9 +34,7 @@ module.exports = (players, communityCards, omaha) => {
 				}
 			}
 			// get the best hand ranking
-			const maxRanking = hands.reduce((maxRank, h) => {
-				return maxRank = Math.max(h.handRanking, maxRank);
-			}, 0);
+			const maxRanking = hands.reduce((maxRank, h) => maxRank = Math.max(h.handRanking, maxRank), 0);
 			const maxRankingHands = hands.filter(h => h.handRanking === maxRanking);
 			if (maxRankingHands.length === 1) p.handInfo = maxRankingHands[0];
 			// else if there are multiple hands with the same hand ranking

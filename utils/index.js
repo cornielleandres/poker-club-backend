@@ -14,6 +14,7 @@ const handleAddTable									= require('./events/lobby/handleAddTable.js');
 const handleAddToPlayerChat						= require('./events/table/handleAddToPlayerChat.js');
 const handleAuthenticate							= require('./socketio/handleAuthenticate.js');
 const handleDefaultAction							= require('./events/table/handleDefaultAction.js');
+const handleDiscardTimers							= require('./events/table/handleDiscardTimers.js');
 const handleDisconnect								= require('./socketio/handleDisconnect.js');
 const handleEndOfAction								= require('./events/table/handleEndOfAction.js');
 const handleGetLobbyTables						= require('./events/lobby/handleGetLobbyTables.js');
@@ -22,6 +23,7 @@ const handleGetNewHand								= require('./events/table/handleGetNewHand.js');
 const handleIfNextPlayerDisconnected	= require('./events/table/handleIfNextPlayerDisconnected.js');
 const handlePlayerCalls								= require('./events/table/handlePlayerCalls.js');
 const handlePlayerChecks							= require('./events/table/handlePlayerChecks.js');
+const handlePlayerDiscards						= require('./events/table/handlePlayerDiscards.js');
 const handlePlayerFolds								= require('./events/table/handlePlayerFolds.js');
 const handlePlayerJoins								= require('./events/table/handlePlayerJoins.js');
 const handlePlayerLeaves							= require('./events/table/handlePlayerLeaves.js');
@@ -57,6 +59,7 @@ module.exports = {
 	handleAddToPlayerChat,
 	handleAuthenticate,
 	handleDefaultAction,
+	handleDiscardTimers,
 	handleDisconnect,
 	handleEndOfAction,
 	handleGetLobbyTables,
@@ -65,6 +68,7 @@ module.exports = {
 	handleIfNextPlayerDisconnected,
 	handlePlayerCalls,
 	handlePlayerChecks,
+	handlePlayerDiscards,
 	handlePlayerFolds,
 	handlePlayerJoins,
 	handlePlayerLeaves,
