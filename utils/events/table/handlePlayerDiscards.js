@@ -25,11 +25,12 @@ module.exports = async (io, socket, cardIndex, callback) => {
 		const tablePlayer = await tablePlayerDb.getTablePlayerByUserId(user_id);
 		table_id = tablePlayer.table_id;
 		const { cards, position } = tablePlayer;
-		await tablePlayerDb.resetDiscardTimerEnd(table_id, [ position ]);
-		await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end);
+		const positions = [ position ];
+		await tablePlayerDb.resetDiscardTimerEnd(table_id, positions);
+		await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end, positions);
 		cards.splice(cardIndex, 1);
 		await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
-		await handleTablePlayerPayloads(io, table_id, remove_card, [ position ]);
+		await handleTablePlayerPayloads(io, table_id, remove_card, positions);
 		return callback();
 	} catch (e) {
 		const errMsg = 'Player Discards Error: ' + e.toString();

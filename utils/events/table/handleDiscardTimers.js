@@ -23,7 +23,7 @@ module.exports = async (
 	table_id,
 	table_type,
 	playersWithCards,
-	updateStreetCardsTimerAndActions,
+	continueHandFunc,
 ) => {
 	const { handleTablePlayerPayloads, isNonEmptyObject } = require('../../index.js');
 	let total_time = totalTimeNormal;
@@ -40,20 +40,20 @@ module.exports = async (
 			// filter out the players with cards in front of them (are still in the hand)
 			const playersNotDiscarded = players.filter(p => p.cards.length > 2 && isNonEmptyObject(p.cards[0]));
 			// if there is noone who has not discarded, continue the hand as normal
-			if (!playersNotDiscarded.length) return updateStreetCardsTimerAndActions();
+			if (!playersNotDiscarded.length) return continueHandFunc();
 			// if at least one player has not discarded and the time for them to do so is up
 			if (setTimeoutTimer * numOfTimeouts++ >= total_time) {
 				// force the remaining players who have not done so to discard their last card
 				const positions = playersNotDiscarded.map(p => p.position);
 				await tablePlayerDb.resetDiscardTimerEnd(table_id, positions);
-				await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end);
+				await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end, positions);
 				for await (const player of playersNotDiscarded) {
 					player.cards.splice(2, 1);
 					await tablePlayerDb.updateCardsByPosition(table_id, player.position, player.cards);
 				}
 				await handleTablePlayerPayloads(io, table_id, remove_card, positions);
 				// then continue the hand as normal
-				return updateStreetCardsTimerAndActions();
+				return continueHandFunc();
 			}
 			// if at least one player has not discarded BUT the time for them to do so is NOT up,
 			// set another timeout
