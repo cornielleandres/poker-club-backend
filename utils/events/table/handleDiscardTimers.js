@@ -51,7 +51,7 @@ module.exports = async (
 					player.cards.splice(2, 1);
 					await tablePlayerDb.updateCardsByPosition(table_id, player.position, player.cards);
 				}
-				await handleTablePlayerPayloads(io, table_id, remove_card, positions);
+				await handleTablePlayerPayloads(io, table_id, remove_card);
 				// then continue the hand as normal
 				return continueHandFunc();
 			}

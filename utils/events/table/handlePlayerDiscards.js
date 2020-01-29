@@ -30,7 +30,7 @@ module.exports = async (io, socket, cardIndex, callback) => {
 		await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end, positions);
 		cards.splice(cardIndex, 1);
 		await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
-		await handleTablePlayerPayloads(io, table_id, remove_card, positions);
+		await handleTablePlayerPayloads(io, table_id, remove_card);
 		return callback();
 	} catch (e) {
 		const errMsg = 'Player Discards Error: ' + e.toString();
