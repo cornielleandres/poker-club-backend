@@ -24,12 +24,12 @@ const _addAllTableEventListeners = (io, socket) => {
 		handlePlayerFolds,
 		handlePlayerRaises,
 	}	= require('../../index.js');
-	socket.on(add_to_player_chat, (msg, callback) => handleAddToPlayerChat(io, socket, msg, callback));
-	socket.on(player_calls, callback => handlePlayerCalls(io, socket, callback));
-	socket.on(player_checks, callback => handlePlayerChecks(io, socket, callback));
-	socket.on(player_discards, (cardIdx, callback) => handlePlayerDiscards(io, socket, cardIdx, callback));
-	socket.on(player_folds, callback => handlePlayerFolds(io, socket, callback));
-	socket.on(player_raises, (raise, callback) => handlePlayerRaises(io, socket, raise, callback));
+	socket.on(add_to_player_chat, msg => handleAddToPlayerChat(io, socket, msg));
+	socket.on(player_calls, () => handlePlayerCalls(io, socket));
+	socket.on(player_checks, () => handlePlayerChecks(io, socket));
+	socket.on(player_discards, cardIdx => handlePlayerDiscards(io, socket, cardIdx));
+	socket.on(player_folds, () => handlePlayerFolds(io, socket));
+	socket.on(player_raises, raise => handlePlayerRaises(io, socket, raise));
 };
 
 const _removeAllTableEventListeners = socket => {

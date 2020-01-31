@@ -17,7 +17,7 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, socket, callback, userId) => {
+module.exports = async (io, socket, userId) => {
 	const {
 		distributePotToWinners,
 		getPlayerIfActionOnPlayer,
@@ -46,7 +46,6 @@ module.exports = async (io, socket, callback, userId) => {
 		// fold the player's cards
 		await tablePlayerDb.foldCards(table_id, user_id);
 		await handleTablePlayerPayloads(io, table_id, 'fold_cards', [ playerPosition ], 2000);
-		if (callback) callback();
 		const actionChatPayload = { type: 'fold', payload: { description: 'folded', user_id } };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		let nextActionPlayer = await getNextPlayer(table_id, 'action');

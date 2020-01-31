@@ -18,9 +18,9 @@ module.exports = async (io, socket, table_id, user_id, bet) => {
 	try {
 		const { call_amount } = await tableDb.getCallAmountByTableId(table_id);
 		// if player's bet is equal to the call_amount, player is forced to check
-		if (bet === call_amount) return handlePlayerChecks(io, socket, null, user_id);
+		if (bet === call_amount) return handlePlayerChecks(io, socket, user_id);
 		// else player is forced to fold
-		return handlePlayerFolds(io, socket, null, user_id);
+		return handlePlayerFolds(io, socket, user_id);
 	} catch (e) {
 		const errMsg = 'Default Action Error: ' + e.toString();
 		console.log(errMsg);

@@ -22,7 +22,7 @@ const {
 	preflop,
 }	= streets;
 
-module.exports = async (io, socket, callback, userId) => {
+module.exports = async (io, socket, userId) => {
 	const {
 		getPlayerIfActionOnPlayer,
 		getNextPlayer,
@@ -43,7 +43,6 @@ module.exports = async (io, socket, callback, userId) => {
 		const { call_amount, hand_id, players, street, table_type } = table;
 		// player's bet can never be greater than the amount they need to call
 		if (bet > call_amount) throw new Error(betGreaterThanCallAmountError);
-		if (callback) callback();
 		const actionChatPayload = { type: 'check', payload: { description: 'checked', user_id } };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');

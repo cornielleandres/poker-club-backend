@@ -15,10 +15,8 @@ const {
 	table_room,
 }	= constants;
 
-module.exports = async (io, socket, cardIndex, callback) => {
-	const {
-		handleTablePlayerPayloads,
-	}	= require('../../index.js');
+module.exports = async (io, socket, cardIndex) => {
+	const { handleTablePlayerPayloads }	= require('../../index.js');
 	let table_id;
 	try {
 		const { user_id } = socket;
@@ -30,8 +28,7 @@ module.exports = async (io, socket, cardIndex, callback) => {
 		await handleTablePlayerPayloads(io, table_id, reset_discard_timer_end, positions);
 		cards.splice(cardIndex, 1);
 		await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
-		await handleTablePlayerPayloads(io, table_id, remove_card);
-		return callback();
+		return handleTablePlayerPayloads(io, table_id, remove_card);
 	} catch (e) {
 		const errMsg = 'Player Discards Error: ' + e.toString();
 		console.log(errMsg);

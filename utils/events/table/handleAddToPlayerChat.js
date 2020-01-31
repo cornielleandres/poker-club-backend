@@ -12,12 +12,11 @@ const {
 	error_message,
 }	= constants;
 
-module.exports = async (io, socket, message, callback) => {
+module.exports = async (io, socket, message) => {
 	try {
 		const { handleTablePlayerPayloads }	= require('../../index.js');
 		const { user_id } = socket;
 		const { table_id } = await tablePlayerDb.getTablePlayerByUserId(user_id);
-		callback();
 		return handleTablePlayerPayloads(io, table_id, 'update_player_chat', null, null, { message, user_id });
 	} catch (e) {
 		const errMsg = 'Player Chat Error: ' + e.toString();

@@ -19,7 +19,7 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, socket, raiseAmount, callback) => {
+module.exports = async (io, socket, raiseAmount) => {
 	const {
 		getNextPlayer,
 		getPlayerIfActionOnPlayer,
@@ -59,7 +59,6 @@ module.exports = async (io, socket, raiseAmount, callback) => {
 		const chipsToTake = Math.min(table_chips, playerRaise);
 		const bet = (await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake))[0];
 		await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
-		callback();
 		const actionChatPayload = {
 			type: 'raise',
 			payload: {

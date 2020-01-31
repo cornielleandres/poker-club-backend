@@ -18,7 +18,7 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, socket, callback) => {
+module.exports = async (io, socket) => {
 	const {
 		getNextPlayer,
 		getPlayerIfActionOnPlayer,
@@ -45,7 +45,6 @@ module.exports = async (io, socket, callback) => {
 		const chipsToTake = Math.min(table_chips, playerCallAmount);
 		await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake);
 		await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
-		callback();
 		const actionChatPayload = {
 			type: 'call',
 			payload: {
