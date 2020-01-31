@@ -20,6 +20,7 @@ const {
 const allowedTableValues = { bigBlinds, gameTypes, maxPlayers, tableTypes };
 const disconnectMessage = 'You have been disconnected because you logged in somewhere else.';
 const logOutMessage = 'You have been logged out. Please wait a minute and try logging in again. If that does not work, contact the administrator.';
+const update_user_count = 'update_user_count';
 
 const authenticate = async (io, socket, payload, callback) => {
 	const socketId = socket.id;
@@ -59,6 +60,7 @@ const disconnect = async (io, socket, disconnectMessage) => {
 			socket.auth = false;
 			socket.emit(error_message, disconnectMessage || 'You have been disconnected.');
 			socket.disconnect(true);
+			io.emit(update_user_count, Object.keys(io.sockets.sockets).length);
 		}
 	} catch (e) {
 		return console.log('User disconnect error:', e);
@@ -90,6 +92,7 @@ const postAuthenticate = async (io, socket) => {
 		});
 		applyLobbyEvents(socket);
 		applyTableEvents(io, socket);
+		io.emit(update_user_count, Object.keys(io.sockets.sockets).length);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
 		const errMsg = 'Post Authenticate: ' + e.toString();
