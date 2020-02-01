@@ -38,7 +38,7 @@ module.exports = async (io, table_id) => {
 		const table = await tableDb.getTable(table_id);
 		await tablePlayerDb.resetActions(table_id);
 		const { game_type, players, pot, street, table_type } = table;
-		let { community_cards } = table;
+		let { big_blind, community_cards } = table;
 		const crazyPineapple = gameTypes[2];
 		// take all the bets made on this round of betting and update the pot with them
 		await handleUpdatePotAndResetBets(io, table_id, pot);
@@ -70,7 +70,7 @@ module.exports = async (io, table_id) => {
 				} while (nextStreet !== preflop);
 			}
 			const winners = await getWinners(io, table_id, tablePlayers, community_cards, pot, game_type);
-			await distributePotToWinners(io, table_id, pot, winners, tablePlayers, game_type);
+			await distributePotToWinners(io, table_id, pot, winners, tablePlayers, big_blind, game_type);
 			return handleGetNewHand(io, table_id);
 		};
 		// if playing Crazy Pineapple, and the turn has not been revealed yet,

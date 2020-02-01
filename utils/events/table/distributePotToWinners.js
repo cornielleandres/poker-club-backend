@@ -16,12 +16,37 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, table_id, pot, winners, players, game_type) => {
+module.exports = async (
+	io,
+	table_id,
+	potToDistribute,
+	winnersToDistribute,
+	players,
+	big_blind,
+	game_type,
+) => {
 	try {
 		const { handleTablePlayerPayloads, revealPlayerCards }	= require('../../index.js');
-		const potLen = pot.length;
+		let pot = potToDistribute;
+		let potLen = pot.length;
+		let winners = winnersToDistribute;
 		const winnersLen = winners.length;
 		if (potLen !== winnersLen) throw new Error(`There are ${ potLen } pots but ${ winnersLen } winners.`);
+		const oneWinnerTakesPot = winners.every(w => w.length === 1);
+		const small_blind = big_blind / 2;
+		const winnerTakesBlinds = pot[0].amount === big_blind && pot[1].amount === small_blind;
+		// if one player is taking down the blinds, group the blinds into one pot before giving it to the player
+		if (potLen === 2 && oneWinnerTakesPot && winnerTakesBlinds) {
+			const winner = winners[0];
+			const user_ids = [ winner.user_id ];
+			const newWinners = [ winner ];
+			const newPot = [ { amount: big_blind + small_blind, user_ids } ];
+			await tableDb.updatePot(table_id, newPot);
+			await handleTablePlayerPayloads(io, table_id, 'update_pot_with_bets', [], 2000);
+			pot = newPot;
+			potLen = newPot.length;
+			winners = newWinners;
+		}
 		for (let i = potLen - 1; i >= 0; i--) {
 			const currPot = pot[i];
 			const currWinners = winners[i];

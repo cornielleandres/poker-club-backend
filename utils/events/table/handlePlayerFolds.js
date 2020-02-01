@@ -40,7 +40,7 @@ module.exports = async (io, socket, userId) => {
 		await handleTablePlayerPayloads(io, table_id, reset_timer_end);
 		const { bet, position: playerPosition } = tablePlayer;
 		const table = await tableDb.getTable(table_id);
-		const { call_amount, game_type, hand_id, players, pot, street, table_type } = table;
+		const { big_blind, call_amount, game_type, hand_id, players, pot, street, table_type } = table;
 		// player's bet can never be greater than the amount they need to call
 		if (bet > call_amount) throw new Error(betGreaterThanCallAmountError);
 		// fold the player's cards
@@ -78,7 +78,7 @@ module.exports = async (io, socket, userId) => {
 				const winners = [];
 				let potLen = pot.length;
 				while(potLen--) winners.push([ playerToReceivePot ]);
-				await distributePotToWinners(io, table_id, pot, winners, null, game_type);
+				await distributePotToWinners(io, table_id, pot, winners, null, big_blind, game_type);
 				return handleGetNewHand(io, table_id);
 			} else {
 				// else if the next action falls on the player who ends the action(end_action)
