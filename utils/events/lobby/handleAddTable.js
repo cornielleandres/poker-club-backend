@@ -1,11 +1,13 @@
 // config
 const {
 	constants,
+	variables,
 }	= require('../../../config/index.js');
 
 // databases
 const {
 	tableDb,
+	userDb,
 }	= require('../../../data/models/index.js');
 
 const {
@@ -16,6 +18,10 @@ const {
 	tableTypes,
 }	= constants;
 
+const {
+	noUserChipsError,
+}	= variables;
+
 module.exports = async (socket, table, callback) => {
 	try {
 		const { handleUpdateLobbyTables }	= require('../../index.js');
@@ -24,6 +30,8 @@ module.exports = async (socket, table, callback) => {
 		if (!gameTypes.includes(game_type)) throw new Error(`Game type "${ game_type }" not allowed.`);
 		if (!maxPlayers.includes(max_players)) throw new Error(`Max players "${ max_players }" not allowed.`);
 		if (!tableTypes.includes(table_type)) throw new Error(`Table type ${ table_type } not allowed.`);
+		const user_chips = await userDb.getUserChips(socket.user_id);
+		if (!user_chips) throw new Error(noUserChipsError(user_chips));
 		const table_id = (await tableDb.addTable(table))[0];
 		callback(table_id);
 		return handleUpdateLobbyTables(null, socket, null);

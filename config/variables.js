@@ -15,6 +15,9 @@ module.exports = {
 	databaseURL: process.env.DATABASE_URL,
 	db: process.env.DB,
 
+	// errors
+	noUserChipsError: user_chips => `You have ${ user_chips } chips left.`,
+
 	// redis (development)
 	redisHost: process.env.REDIS_HOST,
 	redisPort: process.env.REDIS_PORT || 6379,

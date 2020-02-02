@@ -1,5 +1,14 @@
 const db	= require('../dbConfig.js');
 
+// config
+const {
+	variables,
+}	= require('../../config/index.js');
+
+const {
+	noUserChipsError,
+}	= variables;
+
 const userDoesNotExistError = user_id => `User id #${ user_id } does not exist.`;
 
 const getUserChips = async (id, trx) => {
@@ -41,7 +50,7 @@ module.exports = {
 	getUserChips,
 	takeBuyInFromUserChips: async (id, big_blind, trx) => {
 		const user_chips = await getUserChips(id, trx);
-		if (!user_chips) throw new Error(`You have ${ user_chips } chips left.`);
+		if (!user_chips) throw new Error(noUserChipsError(user_chips));
 		const maxBuyIn = big_blind * 100;
 		const table_chips = Math.min(user_chips, maxBuyIn);
 		const newUserChips = user_chips - table_chips;
