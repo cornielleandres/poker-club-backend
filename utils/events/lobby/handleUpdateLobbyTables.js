@@ -22,11 +22,12 @@ module.exports = async (io, socket, callback) => {
 		if (callback) return callback(lobbyTables);
 		// if a socket was provided, send the lobby tables to everyone in the lobby room except the socket user
 		if (socket) return socket.to(lobby_room).emit(update_lobby_tables, lobbyTables);
-		// else, send the lobby tables to everyone in the lobby room
+		// else, send the lobby tables to everyone in the lobby room with the provided io parameter
 		return io.in(lobby_room).emit(update_lobby_tables, lobbyTables);
 	} catch (e) {
 		const errMsg = 'Update Lobby Tables: ' + e.toString();
 		console.log(errMsg);
-		return io.in(lobby_room).emit(error_message, errMsg);
+		if (socket) return socket.emit(error_message, errMsg);
+		if (io) return io.in(lobby_room).emit(error_message, errMsg);
 	}
 };
