@@ -2,7 +2,7 @@ const applyIoOrigins									= require('./socketio/applyIoOrigins.js');
 const applyLobbyEvents								= require('./events/lobby/applyLobbyEvents.js');
 const applyRedisAdapter								= require('./redis/applyRedisAdapter.js');
 const applySocketAuth									= require('./socketio/applySocketAuth.js');
-const applySocketio										= require('./socketio/applySocketio.js');
+const applySocketioAndRunJobs					= require('./socketio/applySocketioAndRunJobs.js');
 const applyTableEvents								= require('./events/table/applyTableEvents.js');
 const applyUserEvents									= require('./events/user/applyUserEvents.js');
 const delay														= require('./delay.js');
@@ -13,6 +13,7 @@ const getPlayerIfActionOnPlayer				= require('./events/table/getPlayerIfActionOn
 const handleAddTable									= require('./events/lobby/handleAddTable.js');
 const handleAddToPlayerChat						= require('./events/table/handleAddToPlayerChat.js');
 const handleAuthenticate							= require('./socketio/handleAuthenticate.js');
+const handleClaimDailyChips						= require('./events/user/handleClaimDailyChips.js');
 const handleDefaultAction							= require('./events/table/handleDefaultAction.js');
 const handleDiscardTimers							= require('./events/table/handleDiscardTimers.js');
 const handleDisconnect								= require('./socketio/handleDisconnect.js');
@@ -41,13 +42,14 @@ const handleUpdatePotAndResetBets			= require('./events/table/handleUpdatePotAnd
 const isNonEmptyObject								= require('./events/table/isNonEmptyObject.js');
 const redisClient											= require('./redis/redisClient.js');
 const revealPlayerCards								= require('./events/table/revealPlayerCards.js');
+const runJobs													= require('./jobs/runJobs.js');
 
 module.exports = {
 	applyIoOrigins,
 	applyLobbyEvents,
 	applyRedisAdapter,
 	applySocketAuth,
-	applySocketio,
+	applySocketioAndRunJobs,
 	applyTableEvents,
 	applyUserEvents,
 	delay,
@@ -58,6 +60,7 @@ module.exports = {
 	handleAddTable,
 	handleAddToPlayerChat,
 	handleAuthenticate,
+	handleClaimDailyChips,
 	handleDefaultAction,
 	handleDiscardTimers,
 	handleDisconnect,
@@ -86,4 +89,5 @@ module.exports = {
 	isNonEmptyObject,
 	redisClient,
 	revealPlayerCards,
+	runJobs,
 };

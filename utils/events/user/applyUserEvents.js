@@ -72,6 +72,7 @@ const postAuthenticate = async (io, socket) => {
 		const {
 			applyLobbyEvents,
 			applyTableEvents,
+			handleClaimDailyChips,
 			redisClient,
 		}	= require('../../index.js');
 		const { user_id } = socket;
@@ -90,6 +91,7 @@ const postAuthenticate = async (io, socket) => {
 				}
 			}
 		});
+		socket.on('claim_daily_chips', callback => handleClaimDailyChips(socket, callback));
 		applyLobbyEvents(socket);
 		applyTableEvents(io, socket);
 		io.emit(update_user_count, Object.keys(io.sockets.sockets).length);

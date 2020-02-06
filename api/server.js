@@ -1,13 +1,14 @@
 const express			= require('express');
 const http				= require('http');
+
 const server			= express();
 const httpServer	= http.Server(server);
 
 // utils
 const {
-	applySocketio,
+	applySocketioAndRunJobs,
 }	= require('../utils/index.js');
 
-applySocketio(httpServer);
+applySocketioAndRunJobs(httpServer);
 
 module.exports = httpServer;

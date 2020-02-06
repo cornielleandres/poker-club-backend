@@ -38,7 +38,10 @@ module.exports = {
 		return (await db('users').insert(userInfo).returning('id'))[0];
 	},
 	getUserById: async id => {
-		const user = await db('users').select('id', 'name', 'picture', 'user_chips').where({ id }).first();
+		const user = await db('users')
+			.select('claimed_daily_chips', 'id', 'name', 'picture', 'user_chips')
+			.where({ id })
+			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
 		const tablePlayer = await db('table-players')
 			.select('table_id')
@@ -48,6 +51,9 @@ module.exports = {
 		return tablePlayer ? { table_id: tablePlayer.table_id, user } : { user };
 	},
 	getUserChips,
+	resetAllClaimedDailyChips: () => (
+		db('users').where({ claimed_daily_chips: true }).update({ claimed_daily_chips: false })
+	),
 	takeBuyInFromUserChips: async (id, big_blind, trx) => {
 		const user_chips = await getUserChips(id, trx);
 		if (!user_chips) throw new Error(noUserChipsError(user_chips));
@@ -57,4 +63,11 @@ module.exports = {
 		await trx('users').update({ user_chips: newUserChips }).where({ id });
 		return { table_chips, user_chips: newUserChips };
 	},
+	updateClaimedDailyChips: id => (
+		db('users')
+			.where({ id })
+			.update({ claimed_daily_chips: true })
+			.increment({ user_chips: 500 })
+			.returning('user_chips')
+	),
 };
