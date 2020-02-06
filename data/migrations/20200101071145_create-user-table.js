@@ -4,6 +4,11 @@ exports.up = function(knex) {
 			.increments();
 
 		table
+			.boolean('claimed_daily_chips')
+			.defaultTo(false)
+			.notNullable();
+
+		table
 			.string('email')
 			.notNullable()
 			.unique()
