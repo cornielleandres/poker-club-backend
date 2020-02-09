@@ -5,6 +5,7 @@ const {
 
 // databases
 const {
+	tablePlayerDb,
 	userDb,
 }	= require('../../../data/models/index.js');
 
@@ -21,6 +22,12 @@ const allowedTableValues = { bigBlinds, gameTypes, maxPlayers, tableTypes };
 const disconnectMessage = 'You have been disconnected because you logged in somewhere else.';
 const logOutMessage = 'You have been logged out. Please wait a minute and try logging in again. If that does not work, contact the administrator.';
 const update_user_count = 'update_user_count';
+
+const _applyUserEvents = socket => {
+	const { handleClaimDailyChips, handleUpdateUser }	= require('../../index.js');
+	socket.on('claim_daily_chips', callback => handleClaimDailyChips(socket, callback));
+	socket.on('update_user', (user, callback) => handleUpdateUser(socket, user, callback));
+};
 
 const authenticate = async (io, socket, payload, callback) => {
 	const socketId = socket.id;
@@ -69,15 +76,13 @@ const disconnect = async (io, socket, disconnectMessage) => {
 
 const postAuthenticate = async (io, socket) => {
 	try {
-		const {
-			applyLobbyEvents,
-			applyTableEvents,
-			handleClaimDailyChips,
-			redisClient,
-		}	= require('../../index.js');
+		const { applyLobbyEvents, applyTableEvents, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
 		const user = await userDb.getUserById(user_id);
-		socket.emit('user_connect', user, allowedTableValues);
+		const tablePlayer = await tablePlayerDb.getTableIdByUserId(user_id);
+		const userConnectPayload = { user };
+		if (tablePlayer) userConnectPayload.table_id = tablePlayer.table_id;
+		socket.emit('user_connect', userConnectPayload, allowedTableValues);
 		socket.conn.on('packet', async packet => {
 			if (socket.auth && packet.type === 'ping') {
 				try {
@@ -91,7 +96,7 @@ const postAuthenticate = async (io, socket) => {
 				}
 			}
 		});
-		socket.on('claim_daily_chips', callback => handleClaimDailyChips(socket, callback));
+		_applyUserEvents(socket);
 		applyLobbyEvents(socket);
 		applyTableEvents(io, socket);
 		io.emit(update_user_count, Object.keys(io.sockets.sockets).length);

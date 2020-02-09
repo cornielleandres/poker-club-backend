@@ -26,15 +26,13 @@ module.exports = {
 		const { email, picture } = userInfo;
 		const user = await db('users').select('id', 'picture').where({ email }).first();
 		if (user) {
-			const { id: userId, picture: userPicture } = user;
-			// if user changed their picture, update it before returning the user id
-			if (userPicture !== picture) {
-				user.picture = picture;
-				await db('users').update(user).where({ id: userId });
-			}
-			return userId;
+			const { id, picture: prevPicture } = user;
+			// if user changed their picture, update it
+			if (prevPicture !== picture) await db('users').where({ id }).update({ picture });
+			// then return their user id
+			return id;
 		}
-		// if user does not exist, add them and return the newly added user id
+		// if user does not exist, add them and return the newly created user id
 		return (await db('users').insert(userInfo).returning('id'))[0];
 	},
 	getUserById: async id => {
@@ -43,12 +41,7 @@ module.exports = {
 			.where({ id })
 			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
-		const tablePlayer = await db('table-players')
-			.select('table_id')
-			.where({ user_id: id })
-			.orderBy('join_date', 'desc')
-			.first();
-		return tablePlayer ? { table_id: tablePlayer.table_id, user } : { user };
+		return user;
 	},
 	getUserChips,
 	resetAllClaimedDailyChips: () => (
@@ -70,4 +63,5 @@ module.exports = {
 			.increment({ user_chips: 500 })
 			.returning('user_chips')
 	),
+	updateUser: (id, user) => db('users').where({ id }).update(user),
 };

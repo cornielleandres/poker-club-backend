@@ -39,6 +39,7 @@ const handleTokenAuth									= require('./socketio/handleTokenAuth.js');
 const handleUpdateActionAndTimer			= require('./events/table/handleUpdateActionAndTimer.js');
 const handleUpdateLobbyTables					= require('./events/lobby/handleUpdateLobbyTables.js');
 const handleUpdatePotAndResetBets			= require('./events/table/handleUpdatePotAndResetBets.js');
+const handleUpdateUser								= require('./events/user/handleUpdateUser.js');
 const isNonEmptyObject								= require('./events/table/isNonEmptyObject.js');
 const redisClient											= require('./redis/redisClient.js');
 const revealPlayerCards								= require('./events/table/revealPlayerCards.js');
@@ -86,6 +87,7 @@ module.exports = {
 	handleUpdateActionAndTimer,
 	handleUpdateLobbyTables,
 	handleUpdatePotAndResetBets,
+	handleUpdateUser,
 	isNonEmptyObject,
 	redisClient,
 	revealPlayerCards,

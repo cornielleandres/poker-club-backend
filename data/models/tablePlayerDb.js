@@ -67,6 +67,13 @@ module.exports = {
 	getPlayerCardsAndPositionsByTableId: table_id => (
 		db('table-players').select('cards', 'position').where({ table_id })
 	),
+	getTableIdByUserId: user_id => (
+		db('table-players')
+			.select('table_id')
+			.where({ user_id })
+			.orderBy('join_date', 'desc')
+			.first()
+	),
 	getTablePlayerByUserId: async user_id => {
 		const tablePlayer = await db('table-players')
 			.select('action', 'bet', 'cards', 'end_action', 'position', 'table_chips', 'table_id')
