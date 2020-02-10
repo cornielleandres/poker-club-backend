@@ -18,6 +18,7 @@ const handleDefaultAction							= require('./events/table/handleDefaultAction.js
 const handleDiscardTimers							= require('./events/table/handleDiscardTimers.js');
 const handleDisconnect								= require('./socketio/handleDisconnect.js');
 const handleEndOfAction								= require('./events/table/handleEndOfAction.js');
+const handleGetDefaultAvatars					= require('./events/user/handleGetDefaultAvatars.js');
 const handleGetLobbyTables						= require('./events/lobby/handleGetLobbyTables.js');
 const handleGetNewCards								= require('./events/table/handleGetNewCards.js');
 const handleGetNewHand								= require('./events/table/handleGetNewHand.js');
@@ -37,7 +38,10 @@ const handleTablePlayerPayloads				= require('./events/table/handleTablePlayerPa
 const handleTakeBlinds								= require('./events/table/handleTakeBlinds.js');
 const handleTokenAuth									= require('./socketio/handleTokenAuth.js');
 const handleUpdateActionAndTimer			= require('./events/table/handleUpdateActionAndTimer.js');
+const handleUpdateAvatar							= require('./events/user/handleUpdateAvatar.js');
+const handleUpdateDefaultAvatar				= require('./events/user/handleUpdateDefaultAvatar.js');
 const handleUpdateLobbyTables					= require('./events/lobby/handleUpdateLobbyTables.js');
+const handleUpdatePicture							= require('./events/user/handleUpdatePicture.js');
 const handleUpdatePotAndResetBets			= require('./events/table/handleUpdatePotAndResetBets.js');
 const handleUpdateUser								= require('./events/user/handleUpdateUser.js');
 const isNonEmptyObject								= require('./events/table/isNonEmptyObject.js');
@@ -66,6 +70,7 @@ module.exports = {
 	handleDiscardTimers,
 	handleDisconnect,
 	handleEndOfAction,
+	handleGetDefaultAvatars,
 	handleGetLobbyTables,
 	handleGetNewCards,
 	handleGetNewHand,
@@ -85,7 +90,10 @@ module.exports = {
 	handleTakeBlinds,
 	handleTokenAuth,
 	handleUpdateActionAndTimer,
+	handleUpdateAvatar,
+	handleUpdateDefaultAvatar,
 	handleUpdateLobbyTables,
+	handleUpdatePicture,
 	handleUpdatePotAndResetBets,
 	handleUpdateUser,
 	isNonEmptyObject,

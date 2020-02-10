@@ -24,8 +24,19 @@ const logOutMessage = 'You have been logged out. Please wait a minute and try lo
 const update_user_count = 'update_user_count';
 
 const _applyUserEvents = socket => {
-	const { handleClaimDailyChips, handleUpdateUser }	= require('../../index.js');
+	const {
+		handleClaimDailyChips,
+		handleGetDefaultAvatars,
+		handleUpdateAvatar,
+		handleUpdateDefaultAvatar,
+		handleUpdatePicture,
+		handleUpdateUser,
+	}	= require('../../index.js');
 	socket.on('claim_daily_chips', callback => handleClaimDailyChips(socket, callback));
+	socket.on('get_default_avatars', callback => handleGetDefaultAvatars(socket, callback));
+	socket.on('update_avatar', (avatar, callback) => handleUpdateAvatar(socket, avatar, callback));
+	socket.on('update_default_avatar', (id, callback) => handleUpdateDefaultAvatar(socket, id, callback));
+	socket.on('update_picture', (picture, callback) => handleUpdatePicture(socket, picture, callback));
 	socket.on('update_user', (user, callback) => handleUpdateUser(socket, user, callback));
 };
 

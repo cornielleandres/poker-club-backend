@@ -36,11 +36,21 @@ module.exports = {
 		return (await db('users').insert(userInfo).returning('id'))[0];
 	},
 	getUserById: async id => {
+		const { defaultAvatarsDb }	= require('./index.js');
 		const user = await db('users')
-			.select('claimed_daily_chips', 'id', 'name', 'picture', 'user_chips')
+			.select('avatar', 'claimed_daily_chips', 'default_avatar_id', 'id', 'name', 'picture', 'user_chips')
 			.where({ id })
 			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
+		const { avatar, default_avatar_id } = user;
+		if (avatar) user.avatar = avatar.toString();
+		if (default_avatar_id) {
+			const defaultAvatar = await defaultAvatarsDb.getDefaultAvatarById(default_avatar_id);
+			if (!defaultAvatar) throw new Error(`No default avatar found with id ${ default_avatar_id }`);
+			user.default_avatar = defaultAvatar.default_avatar.toString();
+		}
+		else user.default_avatar = null;
+		delete user.default_avatar_id;
 		return user;
 	},
 	getUserChips,
@@ -56,6 +66,7 @@ module.exports = {
 		await trx('users').update({ user_chips: newUserChips }).where({ id });
 		return { table_chips, user_chips: newUserChips };
 	},
+	updateAvatar: (id, avatar) => db('users').where({ id }).update({ avatar, default_avatar_id: null }),
 	updateClaimedDailyChips: id => (
 		db('users')
 			.where({ id })
@@ -63,5 +74,14 @@ module.exports = {
 			.increment({ user_chips: 500 })
 			.returning('user_chips')
 	),
+	updateDefaultAvatar: (id, default_avatar_id) => db('users').where({ id }).update({
+		avatar: null,
+		default_avatar_id,
+	}),
+	updatePicture: (id, picture) => db('users').where({ id }).update({
+		picture,
+		avatar: null,
+		default_avatar_id: null,
+	}),
 	updateUser: (id, user) => db('users').where({ id }).update(user),
 };
