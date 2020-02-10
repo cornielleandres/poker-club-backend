@@ -4,9 +4,18 @@ exports.up = function(knex) {
 			.increments();
 
 		table
+			.binary('avatar');
+
+		table
 			.boolean('claimed_daily_chips')
 			.defaultTo(false)
 			.notNullable();
+
+		table
+			.integer('default_avatar_id')
+			.references('id')
+			.inTable('default-avatars')
+			.onDelete('SET NULL');
 
 		table
 			.string('email')
