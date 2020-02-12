@@ -202,7 +202,7 @@ module.exports = {
 		db('table-players')
 			.update({ cards: JSON.stringify(cards) })
 			.where({ table_id, position })
-			.returning([ 'position', 'user_id' ])
+			.returning('user_id')
 	),
 	updateDiscardTimerEnd: async (table_id, positions, discard_timer_end) => {
 		await resetDiscardTimerEnd(table_id, positions);
