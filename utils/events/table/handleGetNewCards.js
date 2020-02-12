@@ -66,29 +66,32 @@ module.exports = {
 		return community_cards;
 	},
 	playerCards: async (io, table_id) => {
-		const { handleTablePlayerPayloads, redisClient }	= require('../../index.js');
-		const { deck, game_type } = await tableDb.getDeckAndGameType(table_id);
-		const { positions } = await tablePlayerDb.getTablePlayerPositionsAsArray(table_id);
-		const playerCardsLen = game_type === gameTypes[0] ? 2 // NL Hold 'Em
-			: game_type === gameTypes[1] ? 4 // PL Omaha
-				: 3; // Crazy Pineapple
-		const delayTime = playerCardsLen * 1000;
-		for (const position of positions) {
-			const cards = [];
-			for (let j = 0; j < playerCardsLen; j++) {
-				const randomInt = _getRandomInt(0, deck.length);
-				cards.push(deck.splice(randomInt, 1)[0]);
+		try {
+			const { handleTablePlayerPayloads, redisClient }	= require('../../index.js');
+			const { deck, game_type } = await tableDb.getDeckAndGameType(table_id);
+			const { positions } = await tablePlayerDb.getTablePlayerPositionsAsArray(table_id);
+			const playerCardsLen = game_type === gameTypes[0] ? 2 // NL Hold 'Em
+				: game_type === gameTypes[1] ? 4 // PL Omaha
+					: 3; // Crazy Pineapple
+			const delayTime = playerCardsLen * 1000;
+			for (const position of positions) {
+				const cards = [];
+				for (let j = 0; j < playerCardsLen; j++) {
+					const randomInt = _getRandomInt(0, deck.length);
+					cards.push(deck.splice(randomInt, 1)[0]);
+				}
+				const updatedPlayer = (await tablePlayerDb.updateCardsByPosition(table_id, position, cards))[0];
+				await handleTablePlayerPayloads(io, table_id, 'player_cards', [ position ], delayTime);
+				if (updatedPlayer) {
+					const redisClientKey = usersKey + updatedPlayer.user_id;
+					const socketId = await redisClient.getAsync(redisClientKey);
+					const actionChatPayload = { type: 'cards', payload: { cards } };
+					io.to(socketId).emit(update_action_chat, actionChatPayload);
+				}
 			}
-			const {
-				position: payloadPosition,
-				user_id,
-			} = (await tablePlayerDb.updateCardsByPosition(table_id, position, cards))[0];
-			await handleTablePlayerPayloads(io, table_id, 'player_cards', [ payloadPosition ], delayTime);
-			const redisClientKey = usersKey + user_id;
-			const socketId = await redisClient.getAsync(redisClientKey);
-			const actionChatPayload = { type: 'cards', payload: { cards } };
-			io.to(socketId).emit(update_action_chat, actionChatPayload);
+			return tableDb.updateDeck(table_id, deck);
+		} catch (e) {
+			throw 'Player Cards: ' + e;
 		}
-		return tableDb.updateDeck(table_id, deck);
 	},
 };
