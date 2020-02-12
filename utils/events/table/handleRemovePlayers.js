@@ -55,7 +55,7 @@ module.exports = async (io, table_id) => {
 			if (!tableRoomClients.includes(currSocketId) || !table_chips) {
 				// if they still have table chips, add their remaining table chips to their user chips
 				if (table_chips) {
-					const newUserChips = (await userDb.updateUserChips(user_id, table_chips))[0];
+					const newUserChips = (await userDb.addToUserChips(user_id, table_chips))[0];
 					// if user is still connected, send them their updated user chips
 					if (currSocketId) io.to(currSocketId).emit(update_user_chips, newUserChips);
 				}
