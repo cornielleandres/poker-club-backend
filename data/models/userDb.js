@@ -45,11 +45,9 @@ module.exports = {
 		const { avatar, default_avatar_id } = user;
 		if (avatar) user.avatar = avatar.toString();
 		if (default_avatar_id) {
-			const defaultAvatar = await defaultAvatarsDb.getDefaultAvatarById(default_avatar_id);
-			if (!defaultAvatar) throw new Error(`No default avatar found with id ${ default_avatar_id }`);
-			user.default_avatar = defaultAvatar.default_avatar.toString();
-		}
-		else user.default_avatar = null;
+			const default_avatar = await defaultAvatarsDb.getDefaultAvatarById(default_avatar_id);
+			user.default_avatar = default_avatar;
+		} else user.default_avatar = null;
 		delete user.default_avatar_id;
 		return user;
 	},

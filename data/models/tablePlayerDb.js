@@ -100,13 +100,16 @@ module.exports = {
 				'tp.end_action',
 				'tp.hand_description',
 				'tp.hide_cards',
-				'tp.in_table_room',
-				'u.name',
-				'u.picture',
 				'tp.position',
 				'tp.table_chips',
 				'tp.timer_end',
 				'tp.user_id',
+				'tp.in_table_room',
+				'u.avatar',
+				'u.default_avatar_id',
+				'u.name',
+				'u.picture',
+				'u.user_chips',
 			)
 			.where({ table_id })
 			.join('users as u', 'tp.user_id', 'u.id')
@@ -219,11 +222,18 @@ module.exports = {
 	updateHideCards: (table_id, user_id, hide_cards) => (
 		db('table-players').update({ hide_cards }).where({ table_id, user_id })
 	),
-	updateInTableRoom: (table_id, user_id, in_table_room) => {
-		// if player is re-joining table, also update the join date
-		if (in_table_room) return db('table-players')
-			.update({ in_table_room, join_date: db.fn.now() })
-			.where({ table_id, user_id });
+	updateInTableRoom: async (table_id, user_id, in_table_room) => {
+		if (in_table_room) { // if player is joining/re-joining table
+			// update 'in_table_room' of any other table this player might have been in to false
+			await db('table-players')
+				.update({ in_table_room: false })
+				.whereNot({ table_id })
+				.andWhere({ user_id });
+			// then update 'in_table_room' of table this player is joining to true, and update the join date
+			return db('table-players')
+				.update({ in_table_room, join_date: db.fn.now() })
+				.where({ table_id, user_id });
+		}
 		// else just update in_table_room
 		return db('table-players').where({ table_id, user_id }).update({ in_table_room });
 	},
