@@ -55,7 +55,7 @@ module.exports = {
 	},
 	getStreetAndHandId: async id => db('tables').select('street', 'hand_id').where({ id }).first(),
 	getTable: async id => {
-		const { tablePlayerDb }	= require('./index.js');
+		const { defaultAvatarsDb, tablePlayerDb }	= require('./index.js');
 		const table = await db('tables').where({ id }).select(
 			'big_blind',
 			'call_amount',
@@ -74,18 +74,24 @@ module.exports = {
 		const { max_players, players, table_type } = table;
 		for (let i = 0; i < max_players; i++) players.push(null);
 		const turboTableType = tableTypes[1];
-		tablePlayers.forEach(player => {
-			const { position } = player;
-			if (player.timer_end) {
+		for (const player of tablePlayers) {
+			const { avatar, default_avatar_id, discard_timer_end, position, timer_end } = player;
+			if (timer_end) {
 				if (table_type === turboTableType) player.total_time = totalTimeTurbo;
 				else player.total_time = totalTimeNormal;
 			}
-			if (player.discard_timer_end) {
+			if (discard_timer_end) {
 				if (table_type === turboTableType) player.discard_total_time = totalTimeTurbo;
 				else player.discard_total_time = totalTimeNormal;
 			}
+			if (avatar) player.avatar = avatar.toString();
+			if (default_avatar_id) {
+				const default_avatar = await defaultAvatarsDb.getDefaultAvatarById(default_avatar_id);
+				player.default_avatar = default_avatar;
+			} else player.default_avatar = null;
+			delete player.default_avatar_id;
 			players[ position ] = player;
-		});
+		}
 		return table;
 	},
 	resetTable: id => (
