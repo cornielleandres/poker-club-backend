@@ -29,6 +29,7 @@ module.exports = async (io, table_id) => {
 		handleUpdateLobbyTables,
 	} = require('../../index.js');
 	try {
+		await handleGetNewCards.playerCards(io, table_id);
 		await tablePlayerDb.resetActions(table_id);
 		await handleTablePlayerPayloads(io, table_id, update_actions);
 		// remove any players that have left the table room or have no table chips left
@@ -47,7 +48,9 @@ module.exports = async (io, table_id) => {
 			// reset action, dealer_btn, and end_action; and put this sole player in position 0
 			// so when someone else joins, they get to start off OTB by default
 			await tablePlayerDb.resetTablePlayer(table_id, tablePlayers[0].user_id);
-			return handleTablePlayerPayloads(io, table_id, new_hand);
+			await handleTablePlayerPayloads(io, table_id, new_hand);
+			const actionChatPayload = { type: 'waiting', payload: 'Waiting for other players...' };
+			return handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		}
 		const { big_blind, hand_id, street, table_type } = (await tableDb.updateTableForNewHand(table_id))[0];
 		// by default, give actions and dealerBtn to player in position 0
@@ -73,9 +76,8 @@ module.exports = async (io, table_id) => {
 		await tablePlayerDb.resetHandDescriptions(table_id);
 		await tablePlayerDb.resetHideCards(table_id);
 		await handleTablePlayerPayloads(io, table_id, new_hand);
-		const actionChatPayload = { type: 'new_hand', payload: hand_id };
+		const actionChatPayload = { type: new_hand, payload: hand_id };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, 1000, actionChatPayload);
-		await handleGetNewCards.playerCards(io, table_id);
 		await handleTakeBlinds(io, table_id, big_blind);
 		await tablePlayerDb.updateEndAction(table_id, nextActionsPosition);
 		await delay(3000); // delay before starting the timer
