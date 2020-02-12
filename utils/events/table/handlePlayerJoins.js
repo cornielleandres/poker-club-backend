@@ -26,9 +26,10 @@ module.exports = async (io, socket, table_id, callback) => {
 		callback(user_chips);
 		const tablePlayers = await tablePlayerDb.getTablePlayersByTableId(table_id);
 		const newPlayersLen = tablePlayers.length;
-		const { position, in_table_room } = tablePlayers.find(p => p.user_id === user_id);
-		// if player had previously left table room, update their status to reflect their joining it again
-		if (!in_table_room) await tablePlayerDb.updateInTableRoom(table_id, user_id, true);
+		const tablePlayer = tablePlayers.find(p => p.user_id === user_id);
+		if (!tablePlayer) throw new Error('Table player not found.');
+		const { position } = tablePlayer;
+		await tablePlayerDb.updateInTableRoom(table_id, user_id, true);
 		await handleUpdateLobbyTables(null, socket, null);
 		await handleTablePlayerPayloads(io, table_id, 'player_joined', [ position ], 1000);
 		const actionChatPayload = { type: 'player_join', payload: {description: 'joined the table', user_id} };
