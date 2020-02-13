@@ -63,15 +63,19 @@ module.exports = async (
 				const currPotPlayersWithHiddenCards = currPotPlayers.filter(filterHiddenCards);
 				// if there are players with hidden cards in the current pot
 				if (currPotPlayersWithHiddenCards.length) {
-					const mapToPositionAndUserId = p => ({ position: p.position, user_id: p.user_id });
+					const mapToCardsPositionAndUserId = p => ({
+						cards: p.cards,
+						position: p.position,
+						user_id: p.user_id,
+					});
 					const firstWinnerIdx = currPotPlayers.findIndex(p => p.user_id === currWinners[0].user_id);
 					if (firstWinnerIdx === -1) throw new Error('First winner of pot not found in pot players');
 					// reveal the cards of every player with hidden cards up to the first winner of the pot
 					// and then reveal the cards of every winner with hidden cards after that
 					const playerCardsToReveal = currPotPlayersWithHiddenCards
 						.slice(0, firstWinnerIdx)
-						.map(mapToPositionAndUserId)
-						.concat(currWinners.filter(filterHiddenCards).map(mapToPositionAndUserId));
+						.map(mapToCardsPositionAndUserId)
+						.concat(currWinners.filter(filterHiddenCards).map(mapToCardsPositionAndUserId));
 					await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
 				}
 			}

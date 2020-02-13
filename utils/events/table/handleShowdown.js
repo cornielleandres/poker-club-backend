@@ -56,7 +56,7 @@ module.exports = async (io, table_id) => {
 				const reorderedPlayers = players.slice(endActionIndex).concat(players.slice(0, endActionIndex));
 				const playerCardsToReveal = reorderedPlayers
 					.filter(p => p && p.cards.length && isNonEmptyObject(p.cards[0]))
-					.map(p => ({ position: p.position, user_id: p.user_id }));
+					.map(p => ({ cards: p.cards, position: p.position, user_id: p.user_id }));
 				await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
 				// run out the streets
 				nextStreet = getNextStreet(nextStreet);
