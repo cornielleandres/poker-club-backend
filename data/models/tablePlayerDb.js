@@ -85,8 +85,9 @@ module.exports = {
 	},
 	getTablePlayerPositionsAsArray,
 	getTablePlayersByTableId: table_id => (
-		db('table-players')
-			.select('dealer_btn', 'in_table_room', 'position', 'table_chips', 'user_id')
+		db('table-players as tp')
+			.select('tp.dealer_btn', 'tp.in_table_room', 'u.name', 'tp.position', 'tp.table_chips', 'tp.user_id')
+			.join('users as u', 'tp.user_id', 'u.id')
 			.where({ table_id })
 	),
 	getTablePlayersOrderedByPosition: table_id => (

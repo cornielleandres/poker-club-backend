@@ -12,6 +12,7 @@ const {
 
 const {
 	error_message,
+	player_removal,
 	update_action_chat,
 }	= constants;
 
@@ -43,7 +44,13 @@ module.exports = async (io, socket, callback) => {
 			table_id,
 		} = tablePlayer;
 		const { players } = await tableDb.getTable(table_id);
-		const { position } = players.find(p => p && p.user_id === user_id);
+		const player = players.find(p => p && p.user_id === user_id);
+		if (!player) throw new Error(`Cannot find player that left with ID ${ user_id }.`);
+		const { name, position } = player;
+		const actionChatPayload = {
+			type: player_removal,
+			payload: { description: 'left the table', playerNames: [ name ] },
+		};
 		// if the player was the only one at the table
 		if (players.filter(p => p).length === 1) {
 			// update their user chips with their table chips
@@ -63,6 +70,7 @@ module.exports = async (io, socket, callback) => {
 			// then remove them from the table
 			await tablePlayerDb.deleteTablePlayer(table_id, user_id);
 			if (callback) callback(user_chips);
+			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 			await handleTablePlayerPayloads(io, table_id, player_left, [ position ]);
 			return handleUpdateLobbyTables(io);
 		}
@@ -70,7 +78,6 @@ module.exports = async (io, socket, callback) => {
 		// show them as having left the table room(not removed yet)
 		await tablePlayerDb.updateInTableRoom(table_id, user_id, false);
 		if (callback) callback(user_chips);
-		const actionChatPayload = { type: 'player_removal', payload: {description: 'left the table', user_id} };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		await handleTablePlayerPayloads(io, table_id, player_left, []);
 		return handleUpdateLobbyTables(io);

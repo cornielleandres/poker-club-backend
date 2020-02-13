@@ -49,7 +49,7 @@ module.exports = async (io, table_id) => {
 			// so when someone else joins, they get to start off OTB by default
 			await tablePlayerDb.resetTablePlayer(table_id, tablePlayers[0].user_id);
 			await handleTablePlayerPayloads(io, table_id, new_hand);
-			const actionChatPayload = { type: 'waiting', payload: 'Waiting for other players...' };
+			const actionChatPayload = { type: 'waiting', payload: { message: 'Waiting for other players...' } };
 			return handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		}
 		const { big_blind, hand_id, street, table_type } = (await tableDb.updateTableForNewHand(table_id))[0];
@@ -76,7 +76,7 @@ module.exports = async (io, table_id) => {
 		await tablePlayerDb.resetHandDescriptions(table_id);
 		await tablePlayerDb.resetHideCards(table_id);
 		await handleTablePlayerPayloads(io, table_id, new_hand);
-		const actionChatPayload = { type: new_hand, payload: hand_id };
+		const actionChatPayload = { type: new_hand, payload: { hand_id } };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, 1000, actionChatPayload);
 		await handleTakeBlinds(io, table_id, big_blind);
 		await tablePlayerDb.updateEndAction(table_id, nextActionsPosition);

@@ -46,7 +46,7 @@ module.exports = async (io, socket, userId) => {
 		// fold the player's cards
 		await tablePlayerDb.foldCards(table_id, user_id);
 		await handleTablePlayerPayloads(io, table_id, 'fold_cards', [ playerPosition ], 2000);
-		const actionChatPayload = { type: 'fold', payload: { description: 'folded', user_id } };
+		const actionChatPayload = { type: 'fold', payload: { description: 'folded', user_ids: [ user_id ] } };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		let nextActionPlayer = await getNextPlayer(table_id, 'action');
 		const updatePotAndResetBets = Boolean(nextActionPlayer);

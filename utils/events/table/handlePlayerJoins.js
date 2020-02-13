@@ -31,8 +31,11 @@ module.exports = async (io, socket, table_id, callback) => {
 		const { position } = tablePlayer;
 		await tablePlayerDb.updateInTableRoom(table_id, user_id, true);
 		await handleUpdateLobbyTables(null, socket, null);
-		await handleTablePlayerPayloads(io, table_id, 'player_joined', [ position ], 1000);
-		const actionChatPayload = { type: 'player_join', payload: {description: 'joined the table', user_id} };
+		await handleTablePlayerPayloads(io, table_id, 'player_joined', [ position ]);
+		const actionChatPayload = {
+			type: 'player_join',
+			payload: { description: 'joined the table', user_ids: [ user_id ] },
+		};
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		if (prevPlayersLen === 1 && newPlayersLen === 2) return handleGetNewHand(io, table_id);
 	} catch (e) {

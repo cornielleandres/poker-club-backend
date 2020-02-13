@@ -43,7 +43,7 @@ module.exports = async (io, socket, userId) => {
 		const { call_amount, hand_id, players, street, table_type } = table;
 		// player's bet can never be greater than the amount they need to call
 		if (bet > call_amount) throw new Error(betGreaterThanCallAmountError);
-		const actionChatPayload = { type: 'check', payload: { description: 'checked', user_id } };
+		const actionChatPayload = { type: 'check', payload: { description: 'checked', user_ids: [ user_id ] } };
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');
 		if (!nextActionPlayer) throw new Error('Could not get next action player after check.');

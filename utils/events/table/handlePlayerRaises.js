@@ -64,7 +64,7 @@ module.exports = async (io, socket, raiseAmount) => {
 			payload: {
 				amount: bet,
 				description: call_amount ? 'raised to' : 'bet',
-				user_id,
+				user_ids: [ user_id ],
 			},
 		};
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);

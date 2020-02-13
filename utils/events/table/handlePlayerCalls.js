@@ -50,7 +50,7 @@ module.exports = async (io, socket) => {
 			payload: {
 				amount: chipsToTake,
 				description: 'called',
-				user_id,
+				user_ids: [ user_id ],
 			},
 		};
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
