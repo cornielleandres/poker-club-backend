@@ -29,7 +29,6 @@ module.exports = async (io, table_id) => {
 		handleUpdateLobbyTables,
 	} = require('../../index.js');
 	try {
-		await handleGetNewCards.playerCards(io, table_id);
 		await tablePlayerDb.resetActions(table_id);
 		await handleTablePlayerPayloads(io, table_id, update_actions);
 		// remove any players that have left the table room or have no table chips left
@@ -77,7 +76,8 @@ module.exports = async (io, table_id) => {
 		await tablePlayerDb.resetHideCards(table_id);
 		await handleTablePlayerPayloads(io, table_id, new_hand);
 		const actionChatPayload = { type: new_hand, payload: { hand_id } };
-		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, 1000, actionChatPayload);
+		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+		await handleGetNewCards.playerCards(io, table_id);
 		await handleTakeBlinds(io, table_id, big_blind);
 		await tablePlayerDb.updateEndAction(table_id, nextActionsPosition);
 		await delay(3000); // delay before starting the timer
