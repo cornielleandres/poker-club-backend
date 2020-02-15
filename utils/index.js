@@ -36,6 +36,7 @@ const handleRemovePlayers							= require('./events/table/handleRemovePlayers.js
 const handleShowdown									= require('./events/table/handleShowdown.js');
 const handleTablePlayerPayloads				= require('./events/table/handleTablePlayerPayloads.js');
 const handleTakeBlinds								= require('./events/table/handleTakeBlinds.js');
+const handleToggleDarkMode						= require('./events/user/handleToggleDarkMode.js');
 const handleTokenAuth									= require('./socketio/handleTokenAuth.js');
 const handleUpdateActionAndTimer			= require('./events/table/handleUpdateActionAndTimer.js');
 const handleUpdateAvatar							= require('./events/user/handleUpdateAvatar.js');
@@ -88,6 +89,7 @@ module.exports = {
 	handleShowdown,
 	handleTablePlayerPayloads,
 	handleTakeBlinds,
+	handleToggleDarkMode,
 	handleTokenAuth,
 	handleUpdateActionAndTimer,
 	handleUpdateAvatar,

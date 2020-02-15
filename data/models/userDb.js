@@ -38,7 +38,16 @@ module.exports = {
 	getUserById: async id => {
 		const { defaultAvatarsDb }	= require('./index.js');
 		const user = await db('users')
-			.select('avatar', 'claimed_daily_chips', 'default_avatar_id', 'id', 'name', 'picture', 'user_chips')
+			.select(
+				'avatar',
+				'claimed_daily_chips',
+				'dark_mode',
+				'default_avatar_id',
+				'id',
+				'name',
+				'picture',
+				'user_chips',
+			)
 			.where({ id })
 			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
@@ -64,6 +73,12 @@ module.exports = {
 		await trx('users').update({ user_chips: newUserChips }).where({ id });
 		return { table_chips, user_chips: newUserChips };
 	},
+	toggleDarkMode: id => (
+		db('users')
+			.where({ id })
+			.update({ dark_mode: db.raw('NOT ??', [ 'dark_mode' ]) })
+			.returning('dark_mode')
+	),
 	updateAvatar: (id, avatar) => db('users').where({ id }).update({ avatar, default_avatar_id: null }),
 	updateClaimedDailyChips: id => (
 		db('users')
