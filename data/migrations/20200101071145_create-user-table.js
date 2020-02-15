@@ -12,6 +12,11 @@ exports.up = function(knex) {
 			.notNullable();
 
 		table
+			.boolean('dark_mode')
+			.defaultTo(false)
+			.notNullable();
+
+		table
 			.integer('default_avatar_id')
 			.references('id')
 			.inTable('default-avatars')
