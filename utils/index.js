@@ -20,6 +20,7 @@ const handleDisconnect								= require('./socketio/handleDisconnect.js');
 const handleEndOfAction								= require('./events/table/handleEndOfAction.js');
 const handleGetDefaultAvatars					= require('./events/user/handleGetDefaultAvatars.js');
 const handleGetLobbyTables						= require('./events/lobby/handleGetLobbyTables.js');
+const handleGetMainColors							= require('./events/user/handleGetMainColors.js');
 const handleGetNewCards								= require('./events/table/handleGetNewCards.js');
 const handleGetNewHand								= require('./events/table/handleGetNewHand.js');
 const handleIfNextPlayerDisconnected	= require('./events/table/handleIfNextPlayerDisconnected.js');
@@ -42,6 +43,7 @@ const handleUpdateActionAndTimer			= require('./events/table/handleUpdateActionA
 const handleUpdateAvatar							= require('./events/user/handleUpdateAvatar.js');
 const handleUpdateDefaultAvatar				= require('./events/user/handleUpdateDefaultAvatar.js');
 const handleUpdateLobbyTables					= require('./events/lobby/handleUpdateLobbyTables.js');
+const handleUpdateMainColor						= require('./events/user/handleUpdateMainColor.js');
 const handleUpdatePicture							= require('./events/user/handleUpdatePicture.js');
 const handleUpdatePotAndResetBets			= require('./events/table/handleUpdatePotAndResetBets.js');
 const handleUpdateUser								= require('./events/user/handleUpdateUser.js');
@@ -73,6 +75,7 @@ module.exports = {
 	handleEndOfAction,
 	handleGetDefaultAvatars,
 	handleGetLobbyTables,
+	handleGetMainColors,
 	handleGetNewCards,
 	handleGetNewHand,
 	handleIfNextPlayerDisconnected,
@@ -95,6 +98,7 @@ module.exports = {
 	handleUpdateAvatar,
 	handleUpdateDefaultAvatar,
 	handleUpdateLobbyTables,
+	handleUpdateMainColor,
 	handleUpdatePicture,
 	handleUpdatePotAndResetBets,
 	handleUpdateUser,

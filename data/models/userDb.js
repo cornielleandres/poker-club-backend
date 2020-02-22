@@ -37,18 +37,20 @@ module.exports = {
 	},
 	getUserById: async id => {
 		const { defaultAvatarsDb }	= require('./index.js');
-		const user = await db('users')
+		const user = await db('users as u')
 			.select(
-				'avatar',
-				'claimed_daily_chips',
-				'dark_mode',
-				'default_avatar_id',
-				'id',
-				'name',
-				'picture',
-				'user_chips',
+				'u.avatar',
+				'u.claimed_daily_chips',
+				'u.dark_mode',
+				'u.default_avatar_id',
+				'u.id',
+				'u.name',
+				'u.picture',
+				'u.user_chips',
+				db.raw('JSON_BUILD_OBJECT(\'light\', light, \'main\', main, \'dark\', dark) AS main_color'),
 			)
-			.where({ id })
+			.join('main-colors as mc', 'u.main_color_id', 'mc.id')
+			.where('u.id', id)
 			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
 		const { avatar, default_avatar_id } = user;
@@ -91,6 +93,7 @@ module.exports = {
 		avatar: null,
 		default_avatar_id,
 	}),
+	updateMainColor: (id, main_color_id) => db('users').where({ id }).update({ main_color_id }),
 	updatePicture: (id, picture) => db('users').where({ id }).update({
 		picture,
 		avatar: null,

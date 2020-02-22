@@ -27,17 +27,21 @@ const _applyUserEvents = socket => {
 	const {
 		handleClaimDailyChips,
 		handleGetDefaultAvatars,
+		handleGetMainColors,
 		handleToggleDarkMode,
 		handleUpdateAvatar,
 		handleUpdateDefaultAvatar,
+		handleUpdateMainColor,
 		handleUpdatePicture,
 		handleUpdateUser,
 	}	= require('../../index.js');
 	socket.on('claim_daily_chips', callback => handleClaimDailyChips(socket, callback));
 	socket.on('get_default_avatars', callback => handleGetDefaultAvatars(socket, callback));
+	socket.on('get_main_colors', callback => handleGetMainColors(socket, callback));
 	socket.on('toggle_dark_mode', callback => handleToggleDarkMode(socket, callback));
 	socket.on('update_avatar', (avatar, callback) => handleUpdateAvatar(socket, avatar, callback));
 	socket.on('update_default_avatar', (id, callback) => handleUpdateDefaultAvatar(socket, id, callback));
+	socket.on('update_main_color', (id, callback) => handleUpdateMainColor(socket, id, callback));
 	socket.on('update_picture', (picture, callback) => handleUpdatePicture(socket, picture, callback));
 	socket.on('update_user', (user, callback) => handleUpdateUser(socket, user, callback));
 };

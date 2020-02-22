@@ -29,6 +29,13 @@ exports.up = function(knex) {
 			.index();
 
 		table
+			.integer('main_color_id')
+			.references('id')
+			.inTable('main-colors')
+			.defaultsTo(1)
+			.onDelete('SET NULL');
+
+		table
 			.string('name')
 			.notNullable();
 
