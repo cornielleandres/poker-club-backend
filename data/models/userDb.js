@@ -49,7 +49,7 @@ module.exports = {
 				'u.user_chips',
 				db.raw('JSON_BUILD_OBJECT(\'light\', light, \'main\', main, \'dark\', dark) AS main_color'),
 			)
-			.join('main-colors as mc', 'u.main_color_id', 'mc.id')
+			.leftOuterJoin('main-colors as mc', 'u.main_color_id', 'mc.id')
 			.where('u.id', id)
 			.first();
 		if (!user) throw new Error(userDoesNotExistError(id));
