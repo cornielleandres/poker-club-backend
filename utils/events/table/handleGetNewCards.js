@@ -41,29 +41,33 @@ const _getRandomInt = (min, max) => {
 
 module.exports = {
 	communityCards: async (io, table_id, street) => {
-		const { handleTablePlayerPayloads, isNonEmptyObject }	= require('../../index.js');
-		const numOfCards = street === flop ? 3 : 1;
-		const { community_cards, deck } = await tableDb.getDeckAndCommunityCards(table_id);
-		let firstEmptyIndex = community_cards.findIndex(card => !isNonEmptyObject(card));
-		const defaultDelayTime = 1000;
-		for (let i = 0; i < numOfCards; i++) {
-			const delayTime = i !== numOfCards - 1 ? defaultDelayTime : 0; // do not delay after last loop
-			const randomInt = _getRandomInt(0, deck.length);
-			const newCard = deck.splice(randomInt, 1)[0];
-			community_cards[firstEmptyIndex] = newCard;
-			await tableDb.updateCommunityCards(table_id, community_cards);
-			await handleTablePlayerPayloads(io, table_id, 'community_card', [ firstEmptyIndex++ ], delayTime);
+		try {
+			const { handleTablePlayerPayloads, isNonEmptyObject }	= require('../../index.js');
+			const numOfCards = street === flop ? 3 : 1;
+			const { community_cards, deck } = await tableDb.getDeckAndCommunityCards(table_id);
+			let firstEmptyIndex = community_cards.findIndex(card => !isNonEmptyObject(card));
+			const defaultDelayTime = 1000;
+			for (let i = 0; i < numOfCards; i++) {
+				const delayTime = i !== numOfCards - 1 ? defaultDelayTime : 0; // do not delay after last loop
+				const randomInt = _getRandomInt(0, deck.length);
+				const newCard = deck.splice(randomInt, 1)[0];
+				community_cards[firstEmptyIndex] = newCard;
+				await tableDb.updateCommunityCards(table_id, community_cards);
+				await handleTablePlayerPayloads(io, table_id, 'community_card', [ firstEmptyIndex++ ], delayTime);
+			}
+			const actionChatPayload = {
+				type: 'cards',
+				payload: {
+					cards: _getActionChatCards(community_cards, street),
+					street,
+				},
+			};
+			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+			await tableDb.updateDeck(table_id, deck);
+			return community_cards;
+		} catch (e) {
+			throw new Error('Community Cards Error: ' + e.toString());
 		}
-		const actionChatPayload = {
-			type: 'cards',
-			payload: {
-				cards: _getActionChatCards(community_cards, street),
-				street,
-			},
-		};
-		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
-		await tableDb.updateDeck(table_id, deck);
-		return community_cards;
 	},
 	playerCards: async (io, table_id) => {
 		try {
@@ -91,7 +95,7 @@ module.exports = {
 			}
 			return tableDb.updateDeck(table_id, deck);
 		} catch (e) {
-			throw 'Player Cards: ' + e;
+			throw new Error('Player Cards Error: ' + e.toString());
 		}
 	},
 };

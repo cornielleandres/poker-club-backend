@@ -11,7 +11,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	player_removal,
 	table_room,
 	update_action_chat,
@@ -20,8 +19,13 @@ const {
 }	= constants;
 
 module.exports = async (io, table_id) => {
+	const {
+		handleError,
+		handleTablePlayerPayloads,
+		handleUpdateLobbyTables,
+		redisClient,
+	}	= require('../../index.js');
 	try {
-		const { handleTablePlayerPayloads, handleUpdateLobbyTables, redisClient }	= require('../../index.js');
 		const tablePlayers = await tablePlayerDb.getTablePlayersByTableId(table_id);
 		const tablePlayersLen = tablePlayers.length;	
 		const tableRoom = io.sockets.adapter.rooms[table_room + table_id];
@@ -80,8 +84,6 @@ module.exports = async (io, table_id) => {
 			return handleUpdateLobbyTables(io);
 		}
 	} catch (e) {
-		const errMsg = 'Remove Players: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error removing players from table.', e, null, io, table_room + table_id);
 	}
 };

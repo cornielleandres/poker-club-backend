@@ -11,17 +11,16 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	table_room,
 }	= constants;
 
 module.exports = async (io, table_id, event_name, positions, delayTime, chatMessagePayload) => {
+	const { delay, handleError, isNonEmptyObject }	= require('../../index.js');
 	try {
-		const { delay, isNonEmptyObject }	= require('../../index.js');
 		const table = await tableDb.getTable(table_id);
 		io.in(table_room + table_id).clients((err, clients) => {
-			if (err) return io.in(table_room + table_id).emit(error_message, err.toString());
 			try {
+				if (err) throw new Error(err);
 				const clientsAndPayloads = [];
 				clients.forEach(client => {
 					const clientSocket = io.sockets.connected[ client ];
@@ -62,15 +61,13 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 				});
 				clientsAndPayloads.forEach(c => io.to(c.client).emit(event_name, c.payload));
 			} catch (e) {
-				const errMsg = 'Table Clients And Payloads for Event: "' + event_name + '": ' + e.toString();
-				console.log(errMsg);
-				return io.in(table_room + table_id).emit(error_message, errMsg);
+				const err = `Error for event "${ event_name }": ${ e }`;
+				return handleError('Error sending data to table players.', err, null, io, table_room + table_id);
 			}
 		});
 		if (delayTime) return delay(delayTime);
 	} catch (e) {
-		const errMsg = 'Table Player Payloads for Event: "' + event_name + '": ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		const err = `Error for event "${ event_name }": ${ e }`;
+		return handleError('Error getting table player clients.', err, null, io, table_room + table_id);
 	}
 };

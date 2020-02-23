@@ -9,14 +9,13 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	remove_card,
 	reset_discard_timer_end,
 	table_room,
 }	= constants;
 
 module.exports = async (io, socket, cardIndex) => {
-	const { handleTablePlayerPayloads }	= require('../../index.js');
+	const { handleError, handleTablePlayerPayloads }	= require('../../index.js');
 	let table_id;
 	try {
 		const { user_id } = socket;
@@ -30,9 +29,7 @@ module.exports = async (io, socket, cardIndex) => {
 		await tablePlayerDb.updateCardsByPosition(table_id, position, cards);
 		return handleTablePlayerPayloads(io, table_id, remove_card);
 	} catch (e) {
-		const errMsg = 'Player Discards Error: ' + e.toString();
-		console.log(errMsg);
-		if (table_id) return io.in(table_room + table_id).emit(error_message, errMsg);
-		return socket.emit(error_message, errMsg);
+		const errorIo = table_id ? io : null;
+		return handleError('Error handling player card-discard.', e, socket, errorIo, table_room + table_id);
 	}
 };

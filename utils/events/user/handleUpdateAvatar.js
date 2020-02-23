@@ -1,20 +1,12 @@
 const Jimp	= require('jimp');
 
-// config
-const {
-	constants,
-}	= require('../../../config/index.js');
-
 // databases
 const {
 	userDb,
 }	= require('../../../data/models/index.js');
 
-const {
-	error_message,
-}	= constants;
-
 module.exports = (socket, avatar, callback) => {
+	const { handleError }	= require('../../index.js');
 	try {
 		const { user_id } = socket;
 		const base64Callback = async (err, newAvatar) => {
@@ -30,8 +22,6 @@ module.exports = (socket, avatar, callback) => {
 				.getBase64(Jimp.AUTO, base64Callback); // generate a Base64 data URI
 		});
 	} catch (e) {
-		const errMsg = 'Update Avatar: ' + e.toString();
-		console.log(errMsg);
-		return socket.emit(error_message, errMsg);
+		return handleError('Error updating avatar.', e, socket);
 	}
 };

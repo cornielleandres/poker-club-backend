@@ -10,7 +10,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	table_room,
 	update_action_chat,
 	update_actions,
@@ -21,6 +20,7 @@ const new_hand = 'new_hand';
 module.exports = async (io, table_id) => {
 	const {
 		delay,
+		handleError,
 		handleGetNewCards,
 		handleRemovePlayers,
 		handleTablePlayerPayloads,
@@ -83,8 +83,6 @@ module.exports = async (io, table_id) => {
 		await delay(3000); // delay before starting the timer
 		return handleUpdateActionAndTimer(io, table_id, nextActionsPosition, table_type, street, hand_id);
 	} catch (e) {
-		const errMsg = 'Get New Hand: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error getting new hand.', e, null, io, table_room + table_id);
 	}
 };

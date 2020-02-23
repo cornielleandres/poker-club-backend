@@ -12,7 +12,6 @@ const {
 
 const {
 	bigBlinds,
-	error_message,
 	gameTypes,
 	maxPlayers,
 	tableTypes,
@@ -23,8 +22,8 @@ const {
 }	= variables;
 
 module.exports = async (socket, table, callback) => {
+	const { handleError, handleUpdateLobbyTables }	= require('../../index.js');
 	try {
-		const { handleUpdateLobbyTables }	= require('../../index.js');
 		const { big_blind, game_type, max_players, table_type } = table;
 		if (!bigBlinds.includes(big_blind)) throw new Error(`Big blind "${ big_blind }" not allowed.`);
 		if (!gameTypes.includes(game_type)) throw new Error(`Game type "${ game_type }" not allowed.`);
@@ -34,10 +33,8 @@ module.exports = async (socket, table, callback) => {
 		if (!user_chips) throw new Error(noUserChipsError(user_chips));
 		const table_id = (await tableDb.addTable(table))[0];
 		callback(table_id);
-		return handleUpdateLobbyTables(null, socket, null);
+		return handleUpdateLobbyTables(null, socket);
 	} catch (e) {
-		const errMsg = 'Add Table: ' + e.toString();
-		console.log(errMsg);
-		return socket.emit(error_message, errMsg);
+		return handleError('Error adding table.', e, socket);
 	}
 };

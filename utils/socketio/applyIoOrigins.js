@@ -8,8 +8,12 @@ const {
 }	= variables;
 
 module.exports = io => {
-	io.origins((origin, callback) => {
+	const { handleError }	= require('../index.js');
+	io.origins(async (origin, callback) => {
 		if (origin === frontendURL) callback(null, true);
-		else callback(new Error('Not allowed by CORS'));
+		else {
+			await handleError('Origin not allowed by CORS.', `Origin: ${ origin }`);
+			callback(new Error('Not allowed by CORS'));
+		}
 	});
 };

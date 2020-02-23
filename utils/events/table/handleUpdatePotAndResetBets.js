@@ -10,15 +10,14 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	give_chips_to_player,
 	table_room,
 	update_action_chat,
 }	= constants;
 
 module.exports = async (io, table_id, pot, onePlayerWithCardsLeft) => {
+	const { handleError, handleTablePlayerPayloads }	= require('../../index.js');
 	try {
-		const { handleTablePlayerPayloads }	= require('../../index.js');
 		// take all the bets made on this round of betting and update the pot with them
 		let playerBets = await tablePlayerDb.getAllPlayerBets(table_id);
 		if (playerBets.length) {
@@ -74,8 +73,6 @@ module.exports = async (io, table_id, pot, onePlayerWithCardsLeft) => {
 			}
 		}
 	} catch (e) {
-		const errMsg = 'Update Pot And Reset Bets Error: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error updating pot/bets.', e, null, io, table_room + table_id);
 	}
 };

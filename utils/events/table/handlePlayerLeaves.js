@@ -11,7 +11,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	player_removal,
 	update_action_chat,
 }	= constants;
@@ -19,20 +18,26 @@ const {
 const player_left = 'player_left';
 
 module.exports = async (io, socket, callback) => {
+	const {
+		getNextPlayer,
+		handleError,
+		handleTablePlayerPayloads,
+		handleUpdateLobbyTables,
+		isNonEmptyObject,
+	} = require('../../index.js');
 	try {
-		const {
-			getNextPlayer,
-			handleTablePlayerPayloads,
-			handleUpdateLobbyTables,
-			isNonEmptyObject,
-		} = require('../../index.js');
 		const { user_id } = socket;
-		let user_chips = await userDb.getUserChips(user_id);
+		let user_chips;
+		try {
+			user_chips = await userDb.getUserChips(user_id);
+		} catch (e) {
+			// do nothing.
+			// no table player will be found and no callback will be provided so it will be caught below.
+		}
 		let tablePlayer;
 		try {
 			tablePlayer = await tablePlayerDb.getTablePlayerByUserId(user_id);
-		// if no table player was found, just update their user chips
-		} catch (e) {
+		} catch (e) { // if no table player was found, just update their user chips
 			if (callback) return callback(user_chips);
 			return;
 		}
@@ -56,8 +61,8 @@ module.exports = async (io, socket, callback) => {
 			// update their user chips with their table chips
 			user_chips = (await userDb.addToUserChips(user_id, table_chips))[0];
 			if (callback) callback(user_chips);
-			await tableDb.deleteTable(table_id); // then delete the table
-			return handleUpdateLobbyTables(io); // then update the lobby tables to reflect this deleted table
+			await tableDb.deleteTable(table_id); // delete the table
+			return handleUpdateLobbyTables(io, socket); // update the lobby tables to reflect deleted table
 		// else if action is not on player AND player has no cards (from folding or not entering hand)
 		} else if (!action && (!cards.length || !isNonEmptyObject(cards[0]))) {
 			// update their total user chips with the chips they had at the table
@@ -72,7 +77,7 @@ module.exports = async (io, socket, callback) => {
 			if (callback) callback(user_chips);
 			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 			await handleTablePlayerPayloads(io, table_id, player_left, [ position ]);
-			return handleUpdateLobbyTables(io);
+			return handleUpdateLobbyTables(io, socket);
 		}
 		// else if action is on player or if player has cards(is in the hand)
 		// show them as having left the table room(not removed yet)
@@ -80,10 +85,8 @@ module.exports = async (io, socket, callback) => {
 		if (callback) callback(user_chips);
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		await handleTablePlayerPayloads(io, table_id, player_left, []);
-		return handleUpdateLobbyTables(io);
+		return handleUpdateLobbyTables(io, socket);
 	} catch (e) {
-		const errMsg = 'Player Leaves Table: ' + e.toString();
-		console.log(errMsg);
-		return socket.emit(error_message, errMsg);
+		return handleError('Error leaving table.', e, socket);
 	}
 };

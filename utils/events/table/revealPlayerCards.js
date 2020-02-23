@@ -9,15 +9,14 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	gameTypes,
 	table_room,
 	update_action_chat,
 }	= constants;
 
 module.exports = async (io, table_id, playerCardsToReveal, game_type) => {
+	const { handleError, handleTablePlayerPayloads }	= require('../../index.js');
 	try {
-		const { handleTablePlayerPayloads }	= require('../../index.js');
 		const omaha = game_type === gameTypes[1];
 		const delayTime = omaha ? 4000 : 2000;
 		for (const player of playerCardsToReveal) {
@@ -28,8 +27,6 @@ module.exports = async (io, table_id, playerCardsToReveal, game_type) => {
 			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		}
 	} catch (e) {
-		const errMsg = 'Reveal Player Cards Error: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error revealing player cards.', e, null, io, table_room + table_id);
 	}
 };

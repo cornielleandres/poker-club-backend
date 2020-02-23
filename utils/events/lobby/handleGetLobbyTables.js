@@ -1,19 +1,8 @@
-// config
-const {
-	constants,
-}	= require('../../../config/index.js');
-
-const {
-	error_message,
-}	= constants;
-
 module.exports = async (socket, callback) => {
+	const { handleError, handleUpdateLobbyTables }	= require('../../index.js');
 	try {
-		const { handleUpdateLobbyTables }	= require('../../index.js');
-		return handleUpdateLobbyTables(null, null, callback);
+		return handleUpdateLobbyTables(null, socket, callback);
 	} catch (e) {
-		const errMsg = 'Get Lobby Tables: ' + e.toString();
-		console.log(errMsg);
-		return socket.emit(error_message, errMsg);
+		return handleError('Error getting lobby tables.', e, socket);
 	}
 };

@@ -9,7 +9,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	remove_card,
 	reset_discard_timer_end,
 	table_room,
@@ -18,14 +17,8 @@ const {
 	totalTimeTurbo,
 }	= constants;
 
-module.exports = async (
-	io,
-	table_id,
-	table_type,
-	playersWithCards,
-	continueHandFunc,
-) => {
-	const { handleTablePlayerPayloads, isNonEmptyObject } = require('../../index.js');
+module.exports = async (io, table_id, table_type, playersWithCards, continueHandFunc) => {
+	const { handleError, handleTablePlayerPayloads, isNonEmptyObject } = require('../../index.js');
 	let total_time = totalTimeNormal;
 	if (table_type !== tableTypes[0]) total_time = totalTimeTurbo; // tableTypes[0] === Normal
 	const positions = playersWithCards.map(p => p.position);
@@ -59,9 +52,7 @@ module.exports = async (
 			// set another timeout
 			return discardTimeout();
 		} catch (e) {
-			const errMsg = 'Discard Timer Error: ' + e.toString();
-			console.log(errMsg);
-			return io.in(table_room + table_id).emit(error_message, errMsg);
+			return handleError('Error handling card-discard timer.', e, null, io, table_room + table_id);
 		}
 	}, setTimeoutTimer);
 	await handleTablePlayerPayloads(io, table_id, 'update_discard_timer', positions, 5000);

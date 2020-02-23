@@ -10,7 +10,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	gameTypes,
 	streets,
 	table_room,
@@ -27,6 +26,7 @@ module.exports = async (io, table_id) => {
 		distributePotToWinners,
 		getNextStreet,
 		handleDiscardTimers,
+		handleError,
 		handleGetNewCards,
 		handleGetNewHand,
 		handleUpdatePotAndResetBets,
@@ -95,8 +95,6 @@ module.exports = async (io, table_id) => {
 		}
 		return updateStreetCardsAndGetWinnersAndNewHand(true);
 	} catch (e) {
-		const errMsg = 'Showdown Error: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error handling showdown.', e, null, io, table_room + table_id);
 	}
 };

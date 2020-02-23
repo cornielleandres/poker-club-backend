@@ -4,7 +4,6 @@ const {
 }	= require('../../../config/index.js');
 
 const {
-	error_message,
 	lobby_room,
 }	= constants;
 
@@ -20,17 +19,17 @@ const _removeAllLobbyEventListeners = socket => {
 };
 
 module.exports = socket => {
-	const { handleGetLobbyTables } = require('../../index.js');
+	const { handleError, handleGetLobbyTables } = require('../../index.js');
 	socket.on('join_lobby_room', callback => (
 		socket.join(lobby_room, err => {
-			if (err) return socket.emit(error_message, err.toString());
+			if (err) return handleError('Error joining lobby.', err, socket);
 			_addAllLobbyEventListeners(socket);
 			return handleGetLobbyTables(socket, callback);
 		})
 	));
 	socket.on('leave_lobby_room', callback => (
 		socket.leave(lobby_room, err => {
-			if (err) return socket.emit(error_message, err.toString());
+			if (err) return handleError('Error leaving lobby.', err, socket);
 			_removeAllLobbyEventListeners(socket);
 			return callback();
 		})

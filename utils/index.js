@@ -18,6 +18,7 @@ const handleDefaultAction							= require('./events/table/handleDefaultAction.js
 const handleDiscardTimers							= require('./events/table/handleDiscardTimers.js');
 const handleDisconnect								= require('./socketio/handleDisconnect.js');
 const handleEndOfAction								= require('./events/table/handleEndOfAction.js');
+const handleError											= require('./handleError.js');
 const handleGetDefaultAvatars					= require('./events/user/handleGetDefaultAvatars.js');
 const handleGetLobbyTables						= require('./events/lobby/handleGetLobbyTables.js');
 const handleGetMainColors							= require('./events/user/handleGetMainColors.js');
@@ -51,6 +52,7 @@ const isNonEmptyObject								= require('./events/table/isNonEmptyObject.js');
 const redisClient											= require('./redis/redisClient.js');
 const revealPlayerCards								= require('./events/table/revealPlayerCards.js');
 const runJobs													= require('./jobs/runJobs.js');
+const sendErrorEmail									= require('./sendErrorEmail.js');
 
 module.exports = {
 	applyIoOrigins,
@@ -73,6 +75,7 @@ module.exports = {
 	handleDiscardTimers,
 	handleDisconnect,
 	handleEndOfAction,
+	handleError,
 	handleGetDefaultAvatars,
 	handleGetLobbyTables,
 	handleGetMainColors,
@@ -106,4 +109,5 @@ module.exports = {
 	redisClient,
 	revealPlayerCards,
 	runJobs,
+	sendErrorEmail,
 };

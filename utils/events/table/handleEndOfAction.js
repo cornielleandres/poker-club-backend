@@ -10,7 +10,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	gameTypes,
 	streets,
 	table_room,
@@ -22,18 +21,19 @@ const {
 }	= streets;
 
 module.exports = async (io, table, updatePotAndResetBets) => {
+	const {
+		getNextPlayer,
+		getNextStreet,
+		handleDiscardTimers,
+		handleError,
+		handleGetNewCards,
+		handleShowdown,
+		handleUpdateActionAndTimer,
+		handleUpdatePotAndResetBets,
+		isNonEmptyObject,
+	} = require('../../index.js');
 	let table_id;
 	try {
-		const {
-			getNextPlayer,
-			getNextStreet,
-			handleDiscardTimers,
-			handleGetNewCards,
-			handleShowdown,
-			handleUpdateActionAndTimer,
-			handleUpdatePotAndResetBets,
-			isNonEmptyObject,
-		} = require('../../index.js');
 		const {
 			game_type,
 			hand_id,
@@ -85,8 +85,6 @@ module.exports = async (io, table, updatePotAndResetBets) => {
 		}
 		return updateStreetCardsTimerAndActions();
 	} catch (e) {
-		const errMsg = 'End of Action Error: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error handling end of action.', e, null, io, table_room + table_id);
 	}
 };

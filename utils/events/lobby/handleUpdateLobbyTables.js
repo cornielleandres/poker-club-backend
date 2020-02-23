@@ -9,25 +9,22 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	lobby_room,
 }	= constants;
 
 const update_lobby_tables = 'update_lobby_tables';
 
 module.exports = async (io, socket, callback) => {
+	const { handleError }	= require('../../index.js');
 	try {
 		const lobbyTables = await tableDb.getLobbyTables();
+		// if an io was provided, send the lobby tables to everyone in the lobby room
+		if (io) return io.in(lobby_room).emit(update_lobby_tables, lobbyTables);
 		// if a callback was provided, only send the lobby tables to that specific user
 		if (callback) return callback(lobbyTables);
-		// if a socket was provided, send the lobby tables to everyone in the lobby room except the socket user
-		if (socket) return socket.to(lobby_room).emit(update_lobby_tables, lobbyTables);
-		// else, send the lobby tables to everyone in the lobby room with the provided io parameter
-		return io.in(lobby_room).emit(update_lobby_tables, lobbyTables);
+		// else, send the lobby tables to everyone in the lobby room except the socket user
+		return socket.to(lobby_room).emit(update_lobby_tables, lobbyTables);
 	} catch (e) {
-		const errMsg = 'Update Lobby Tables: ' + e.toString();
-		console.log(errMsg);
-		if (socket) return socket.emit(error_message, errMsg);
-		if (io) return io.in(lobby_room).emit(error_message, errMsg);
+		return handleError('Error updating lobby tables.', e, socket, io, lobby_room);
 	}
 };

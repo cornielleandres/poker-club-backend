@@ -10,7 +10,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	table_room,
 	tableTypes,
 	totalTimeNormal,
@@ -19,7 +18,12 @@ const {
 }	= constants;
 
 module.exports = async (io, table_id, table_type, action, street, hand_id) => {
-	const { handleDefaultAction, handleTablePlayerPayloads, redisClient } = require('../../index.js');
+	const {
+		handleDefaultAction,
+		handleError,
+		handleTablePlayerPayloads,
+		redisClient,
+	} = require('../../index.js');
 	let total_time = totalTimeNormal;
 	if (table_type !== tableTypes[0]) total_time = totalTimeTurbo; // tableTypes[0] === Normal
 	const newTimerEnd = new Date();
@@ -42,9 +46,7 @@ module.exports = async (io, table_id, table_type, action, street, hand_id) => {
 				return handleDefaultAction(io, playerSocket, table_id, user_id, bet);
 			}
 		} catch (e) {
-			const errMsg = 'Player Timer Error: ' + e.toString();
-			console.log(errMsg);
-			return io.in(table_room + table_id).emit(error_message, errMsg);
+			return handleError('Error handling player timer.', e, null, io, table_room + table_id);
 		}
 	}, total_time);
 };

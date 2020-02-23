@@ -45,7 +45,6 @@ module.exports = async (table_id, start) => {
 		}
 		return nextLivePlayer;
 	} catch (e) {
-		const errMsg = 'Get Next Player Error: ' + e.toString();
-		throw new Error(errMsg);
+		throw new Error('Get Next Player Error: ' + e.toString());
 	}
 };

@@ -11,7 +11,6 @@ const {
 
 const {
 	betGreaterThanCallAmountError,
-	error_message,
 	reset_timer_end,
 	table_room,
 	take_player_chips,
@@ -23,6 +22,7 @@ module.exports = async (io, socket) => {
 		getNextPlayer,
 		getPlayerIfActionOnPlayer,
 		handleEndOfAction,
+		handleError,
 		handleIfNextPlayerDisconnected,
 		handleTablePlayerPayloads,
 		handleShowdown,
@@ -79,9 +79,7 @@ module.exports = async (io, socket) => {
 			return handleIfNextPlayerDisconnected(io, table_id);
 		}
 	} catch (e) {
-		const errMsg = 'Player Call Error: ' + e.toString();
-		console.log(errMsg);
-		if (table_id) return io.in(table_room + table_id).emit(error_message, errMsg);
-		return socket.emit(error_message, errMsg);
+		const errorIo = table_id ? io : null;
+		return handleError('Error handling player call.', e, socket, errorIo, table_room + table_id);
 	}
 };

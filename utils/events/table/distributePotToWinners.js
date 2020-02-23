@@ -10,7 +10,6 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
-	error_message,
 	give_chips_to_player,
 	table_room,
 	update_action_chat,
@@ -25,8 +24,8 @@ module.exports = async (
 	big_blind,
 	game_type,
 ) => {
+	const { handleError, handleTablePlayerPayloads, revealPlayerCards }	= require('../../index.js');
 	try {
-		const { handleTablePlayerPayloads, revealPlayerCards }	= require('../../index.js');
 		let pot = potToDistribute;
 		let potLen = pot.length;
 		let winners = winnersToDistribute;
@@ -112,8 +111,6 @@ module.exports = async (
 			}
 		}
 	} catch (e) {
-		const errMsg = 'Distribute Pot To Winners Error: ' + e.toString();
-		console.log(errMsg);
-		return io.in(table_room + table_id).emit(error_message, errMsg);
+		return handleError('Error distributing pot to winner(s).', e, null, io, table_room + table_id);
 	}
 };

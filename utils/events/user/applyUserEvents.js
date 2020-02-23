@@ -1,6 +1,7 @@
 // config
 const {
 	constants,
+	variables,
 }	= require('../../../config/index.js');
 
 // databases
@@ -17,6 +18,10 @@ const {
 	tableTypes,
 	usersKey,
 }	= constants;
+
+const {
+	nodeEnv,
+}	= variables;
 
 const allowedTableValues = { bigBlinds, gameTypes, maxPlayers, tableTypes };
 const disconnectMessage = 'You have been disconnected because you logged in somewhere else.';
@@ -47,9 +52,9 @@ const _applyUserEvents = socket => {
 };
 
 const authenticate = async (io, socket, payload, callback) => {
+	const { handleError, redisClient }	= require('../../index.js');
 	const socketId = socket.id;
 	try {
-		const { redisClient }	= require('../../index.js');
 		const user_id = await userDb.getOrAddUser(payload);
 		const redisClientKey = usersKey + user_id;
 		// NX will only set the key if it does not already exist.
@@ -68,14 +73,18 @@ const authenticate = async (io, socket, payload, callback) => {
 		return callback(null, true);
 	} catch (e) {
 		const connectedSocket = io.sockets.connected[socketId];
+		const errMsgDescription = 'Error authenticating.';
+		await handleError(errMsgDescription, e, connectedSocket);
 		if (connectedSocket) connectedSocket.disconnect(true);
-		return callback(e);
+		// if in production, emit the error description, else emit the entire error
+		const err = nodeEnv === 'production' ? errMsgDescription : errMsgDescription + ' ' + e.toString();
+		return callback({ message: err });
 	}
 };
 
 const disconnect = async (io, socket, disconnectMessage) => {
+	const { handleError, handlePlayerLeaves, redisClient }	= require('../../index.js');
 	try {
-		const { handlePlayerLeaves, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
 		if (user_id) {
 			await redisClient.delAsync(usersKey + user_id);
@@ -87,13 +96,13 @@ const disconnect = async (io, socket, disconnectMessage) => {
 			io.emit(update_user_count, Object.keys(io.sockets.sockets).length);
 		}
 	} catch (e) {
-		return console.log('User disconnect error:', e);
+		return handleError('User disconnect error.', e);
 	}
 };
 
 const postAuthenticate = async (io, socket) => {
+	const { applyLobbyEvents, applyTableEvents, handleError, redisClient }	= require('../../index.js');
 	try {
-		const { applyLobbyEvents, applyTableEvents, redisClient }	= require('../../index.js');
 		const { user_id } = socket;
 		const user = await userDb.getUserById(user_id);
 		const tablePlayer = await tablePlayerDb.getTableIdByUserId(user_id);
@@ -107,9 +116,7 @@ const postAuthenticate = async (io, socket) => {
 					// EX 30 will auto-expire the lock after 30 seconds.
 					await redisClient.setAsync(usersKey + user_id, socket.id, 'XX', 'EX', 30);
 				} catch (e) {
-					const errMsg = 'Ping Packet: ' + e.toString();
-					console.log(errMsg);
-					return socket.emit(error_message, errMsg);
+					return handleError('Error pinging server.', e, socket);
 				}
 			}
 		});
@@ -119,9 +126,7 @@ const postAuthenticate = async (io, socket) => {
 		io.emit(update_user_count, Object.keys(io.sockets.sockets).length);
 		socket.on('error', err => socket.emit(error_message, err.toString())); // socket.io error
 	} catch (e) {
-		const errMsg = 'Post Authenticate: ' + e.toString();
-		console.log(errMsg);
-		socket.emit(error_message, errMsg);
+		await handleError('Post authentication error.', e, socket);
 		return socket.disconnect(true);
 	}
 };

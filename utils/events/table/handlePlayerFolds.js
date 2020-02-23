@@ -11,7 +11,6 @@ const {
 
 const {
 	betGreaterThanCallAmountError,
-	error_message,
 	reset_timer_end,
 	table_room,
 	update_action_chat,
@@ -23,6 +22,7 @@ module.exports = async (io, socket, userId) => {
 		getPlayerIfActionOnPlayer,
 		getNextPlayer,
 		handleEndOfAction,
+		handleError,
 		handleGetNewHand,
 		handleIfNextPlayerDisconnected,
 		handleShowdown,
@@ -94,9 +94,7 @@ module.exports = async (io, socket, userId) => {
 		// if next player to act is not connected to table room, perform the default action(check or fold)
 		return handleIfNextPlayerDisconnected(io, table_id);
 	} catch (e) {
-		const errMsg = 'Player Fold Error: ' + e.toString();
-		console.log(errMsg);
-		if (table_id) return io.in(table_room + table_id).emit(error_message, errMsg);
-		if (socket) return socket.emit(error_message, errMsg);
+		const errorIo = table_id ? io : null;
+		return handleError('Error handling player fold.', e, socket, errorIo, table_room + table_id);
 	}
 };
