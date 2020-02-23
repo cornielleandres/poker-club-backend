@@ -18,6 +18,13 @@ module.exports = {
 	// errors
 	noUserChipsError: user_chips => `You have ${ user_chips } chips left.`,
 
+	// nodemailer
+	nodemailerHost: process.env.NODEMAILER_HOST,
+	nodemailerPort: process.env.NODEMAILER_PORT,
+	nodemailerUser: process.env.NODEMAILER_USER,
+	nodemailerPass: process.env.NODEMAILER_PASS,
+	nodemailerAdminUser: process.env.NODEMAILER_ADMIN_USER,
+
 	// redis (development)
 	redisHost: process.env.REDIS_HOST,
 	redisPort: process.env.REDIS_PORT || 6379,
@@ -27,5 +34,6 @@ module.exports = {
 
 	// server
 	frontendURL: process.env.FRONTEND_URL,
+	nodeEnv: process.env.NODE_ENV || 'development',
 	port: process.env.PORT || 5000,
 };
