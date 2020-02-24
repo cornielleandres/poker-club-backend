@@ -13,12 +13,17 @@ const {
 }	= variables;
 
 const getRedisClient = () => {
-	const { handleError }	= require('../index.js');
 	bluebird.promisifyAll(redis);
 	const options = { host, port };
 	const redisClient = redis.createClient(url || options);
-	redisClient.on('error', e => handleError('Redis error.', e));
-	redisClient.on('end', () => handleError('Redis connection closed.'));
+	redisClient.on('error', e => {
+		const { handleError }	= require('../index.js');
+		return handleError('Redis error.', e);
+	});
+	redisClient.on('end', () => {
+		const { handleError }	= require('../index.js');
+		return handleError('Redis connection closed.');
+	});
 	return redisClient;
 };
 
