@@ -20,9 +20,9 @@ const getRedisClient = () => {
 		const { handleError }	= require('../index.js');
 		return handleError('Redis error.', e);
 	});
-	redisClient.on('end', () => {
+	redisClient.on('warning', e => {
 		const { handleError }	= require('../index.js');
-		return handleError('Redis connection closed.');
+		return handleError('Redis warning.', e);
 	});
 	return redisClient;
 };
