@@ -1,4 +1,4 @@
-exports.up = async (knex) => {
+exports.up = async knex => {
 	await knex.schema.createTable('table-players', function(table) {
 		table
 			.increments();

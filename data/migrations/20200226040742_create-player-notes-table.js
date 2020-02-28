@@ -1,5 +1,5 @@
-exports.up = function(knex) {
-	return knex.schema.createTable('player-notes', function(table) {
+exports.up = async knex => {
+	await knex.schema.createTable('player-notes', function(table) {
 		table
 			.increments();
 
@@ -8,18 +8,21 @@ exports.up = function(knex) {
 			.references('id')
 			.inTable('users')
 			.notNullable()
-			.onDelete('CASCADE');
+			.onDelete('CASCADE')
+			.index();
 
 		table
 			.integer('player_notes_user_id')
 			.references('id')
 			.inTable('users')
 			.notNullable()
-			.onDelete('CASCADE');
+			.onDelete('CASCADE')
+			.index();
 
 		table
 			.string('notes', 1000);
 	});
+	return knex.schema.raw('CREATE UNIQUE INDEX ON "player-notes" (user_id, player_notes_user_id)');
 };
 
 exports.down = function(knex) {

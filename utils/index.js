@@ -53,6 +53,7 @@ const redisClient											= require('./redis/redisClient.js');
 const revealPlayerCards								= require('./events/table/revealPlayerCards.js');
 const runJobs													= require('./jobs/runJobs.js');
 const sendErrorEmail									= require('./sendErrorEmail.js');
+const updatePlayerNotes								= require('./events/table/updatePlayerNotes.js');
 
 module.exports = {
 	applyIoOrigins,
@@ -103,6 +104,7 @@ module.exports = {
 	handleUpdateLobbyTables,
 	handleUpdateMainColor,
 	handleUpdatePicture,
+	updatePlayerNotes,
 	handleUpdatePotAndResetBets,
 	handleUpdateUser,
 	isNonEmptyObject,

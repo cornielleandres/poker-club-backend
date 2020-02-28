@@ -13,6 +13,7 @@ const player_checks				= 'player_checks';
 const player_discards			= 'player_discards';
 const player_folds				= 'player_folds';
 const player_raises				= 'player_raises';
+const update_player_notes	= 'update_player_notes';
 
 const _addAllTableEventListeners = (io, socket) => {
 	const {
@@ -22,6 +23,7 @@ const _addAllTableEventListeners = (io, socket) => {
 		handlePlayerDiscards,
 		handlePlayerFolds,
 		handlePlayerRaises,
+		updatePlayerNotes,
 	}	= require('../../index.js');
 	socket.on(add_to_player_chat, msg => handleAddToPlayerChat(io, socket, msg));
 	socket.on(player_calls, () => handlePlayerCalls(io, socket));
@@ -29,6 +31,7 @@ const _addAllTableEventListeners = (io, socket) => {
 	socket.on(player_discards, cardIdx => handlePlayerDiscards(io, socket, cardIdx));
 	socket.on(player_folds, () => handlePlayerFolds(io, socket));
 	socket.on(player_raises, raise => handlePlayerRaises(io, socket, raise));
+	socket.on(update_player_notes, (newNotes, callback) => updatePlayerNotes(socket, newNotes, callback));
 };
 
 const _removeAllTableEventListeners = socket => {
@@ -38,6 +41,7 @@ const _removeAllTableEventListeners = socket => {
 	socket.removeAllListeners(player_discards);
 	socket.removeAllListeners(player_folds);
 	socket.removeAllListeners(player_raises);
+	socket.removeAllListeners(update_player_notes);
 };
 
 module.exports = (io, socket) => {

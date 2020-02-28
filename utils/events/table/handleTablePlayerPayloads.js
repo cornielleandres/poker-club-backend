@@ -7,6 +7,7 @@ const {
 
 // databases
 const {
+	playerNotesDb,
 	tableDb,
 }	= require('../../../data/models/index.js');
 
@@ -18,6 +19,8 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 	const { delay, handleError, isNonEmptyObject }	= require('../../index.js');
 	try {
 		const table = await tableDb.getTable(table_id);
+		const user_ids = table.players.map(p => p && p.user_id);
+		const allPlayerNotes = await playerNotesDb.getAllPlayerNotes(user_ids);
 		io.in(table_room + table_id).clients((err, clients) => {
 			try {
 				if (err) throw new Error(err);
@@ -55,6 +58,13 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 								) p.cards = p.cards.map(() => ({ rank: 0 })); // map to hidden cards
 								return p;
 							});
+						const playerNotes = allPlayerNotes.filter(notes => notes.user_id === clientUserId);
+						if (playerNotes.length) {
+							playerNotes.forEach(notes => {
+								const player = players.find(p => p && p.user_id === notes.player_notes_user_id);
+								player.notes = notes.notes;
+							});
+						}
 						const payload = { positions, table: clientTable };
 						clientsAndPayloads.push({ client, payload });
 					}
