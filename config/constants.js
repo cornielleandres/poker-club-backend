@@ -38,6 +38,8 @@ module.exports = {
 
 	// errors
 	betGreaterThanCallAmountError: 'Player\'s bet is greater than call amount.',
+	joiningTableError: 'Error joining table.',
+	tableDoesNotExistError: 'This table does not exist.',
 
 	// event names
 	error_message: 'error_message',
