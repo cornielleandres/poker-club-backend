@@ -10,6 +10,7 @@ const {
 	initialDeck,
 	initialPot,
 	streets,
+	tableDoesNotExistError,
 	tableTypes,
 	totalTimeNormal,
 	totalTimeTurbo,
@@ -18,8 +19,6 @@ const {
 const {
 	preflop,
 }	= streets;
-
-const tableDoesNotExistError = 'This table does not exist.';
 
 module.exports = {
 	addTable: table => db('tables').insert(table).returning('id'),

@@ -9,6 +9,7 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
+	joiningTableError,
 	update_action_chat,
 }	= constants;
 
@@ -39,6 +40,6 @@ module.exports = async (io, socket, table_id, callback) => {
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		if (prevPlayersLen === 1 && newPlayersLen === 2) return handleGetNewHand(io, table_id);
 	} catch (e) {
-		return handleError('Error joining table.', e, socket);
+		return handleError(joiningTableError, e, socket);
 	}
 };

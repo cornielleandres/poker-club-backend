@@ -161,7 +161,7 @@ module.exports = {
 			return user_chips;
 		} catch (e) {
 			await trx.rollback();
-			throw new Error(e);
+			throw e;
 		}
 	},
 	resetActions: async table_id => {
@@ -172,7 +172,7 @@ module.exports = {
 			return trx.commit();
 		} catch (e) {
 			await trx.rollback();
-			throw new Error(e);
+			throw e;
 		}
 	},
 	resetBets: async table_id => (
