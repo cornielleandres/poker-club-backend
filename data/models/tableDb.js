@@ -62,7 +62,6 @@ module.exports = {
 			'game_type',
 			'hand_id',
 			'id',
-			'max_players',
 			'pot',
 			'street',
 			'table_type',
@@ -70,8 +69,7 @@ module.exports = {
 		if (!table) throw new Error(tableDoesNotExistError);
 		const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(id);
 		table.players = [];
-		const { max_players, players, table_type } = table;
-		for (let i = 0; i < max_players; i++) players.push(null);
+		const { players, table_type } = table;
 		const turboTableType = tableTypes[1];
 		for (const player of tablePlayers) {
 			const { avatar, default_avatar_id, discard_timer_end, position, timer_end } = player;
@@ -91,6 +89,9 @@ module.exports = {
 			delete player.default_avatar_id;
 			players[ position ] = player;
 		}
+		const playersLen = players.length;
+		// replace empty player seats with null
+		for (let i = 0; i < playersLen; i++) if (!players[i]) players[i] = null;
 		return table;
 	},
 	resetTable: id => (
