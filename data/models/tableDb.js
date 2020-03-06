@@ -9,6 +9,7 @@ const {
 	initialCommunityCards,
 	initialDeck,
 	initialPot,
+	maxPlayers,
 	streets,
 	tableDoesNotExistError,
 	tableTypes,
@@ -70,6 +71,8 @@ module.exports = {
 		const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(id);
 		table.players = [];
 		const { players, table_type } = table;
+		const totalPlayersLen = maxPlayers[0];
+		for (let i = 0; i < totalPlayersLen; i++) players[i] = null; // replace empty player seats with null
 		const turboTableType = tableTypes[1];
 		for (const player of tablePlayers) {
 			const { avatar, default_avatar_id, discard_timer_end, position, timer_end } = player;
@@ -89,9 +92,6 @@ module.exports = {
 			delete player.default_avatar_id;
 			players[ position ] = player;
 		}
-		const playersLen = players.length;
-		// replace empty player seats with null
-		for (let i = 0; i < playersLen; i++) if (!players[i]) players[i] = null;
 		return table;
 	},
 	resetTable: id => (
