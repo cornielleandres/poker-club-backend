@@ -46,7 +46,10 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 						const clientTable = _.cloneDeep(table);
 						const { players } = clientTable;
 						const playerIndex = players.findIndex(p => p && p.user_id === clientUserId);
-						clientTable.players = players.slice(playerIndex).concat(players.slice(0, playerIndex))
+						if (playerIndex === -1) throw new Error('Could not find client player in table.');
+						clientTable.players = players
+							.slice(playerIndex)
+							.concat(players.slice(0, playerIndex))
 							.map(p => {
 								// if the following conditions are met, hide the player's cards in the payload
 								if (
