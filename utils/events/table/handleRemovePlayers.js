@@ -63,7 +63,8 @@ module.exports = async (io, table_id) => {
 					const newUserChips = (await userDb.addToUserChips(user_id, table_chips))[0];
 					// if user is still connected, send them their updated user chips
 					if (currSocketId) io.to(currSocketId).emit(update_user_chips, newUserChips);
-				}
+				// else if they do not have any table chips left
+				} else io.to(currSocketId).emit('no_table_chips');
 				// then remove them from the table
 				await tablePlayerDb.deleteTablePlayer(table_id, user_id);
 				removedPlayerPositions.push(position);
