@@ -25,7 +25,7 @@ const sendMailCallback = (error, info) => {
 	else console.log('✔ Email with error message sent:', info.response);
 };
 
-module.exports = (errMsgDescription, e, user_id, nodeEnv) => {
+module.exports = (errMsgDescription, errorStack, user_id, nodeEnv) => {
 	const mailOptions = {
 		from: user,
 		to: adminUser,
@@ -33,9 +33,9 @@ module.exports = (errMsgDescription, e, user_id, nodeEnv) => {
 		html:
 			`
 			<p><b>Description:</b> ${ errMsgDescription }</p>
-			<p><b>Error Message:</b> ${ e }</p>
-			<p><b>User ID:</b> ${ user_id }</p>
 			<p><b>Environment:</b> ${ nodeEnv }</p>
+			<p><b>User ID:</b> ${ user_id }</p>
+			<b>Error Stack: </b><pre>${ errorStack }</pre>
 			`,
 	};
 	return transporter.sendMail(mailOptions, sendMailCallback);
