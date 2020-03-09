@@ -15,6 +15,10 @@ const {
 	update_action_chat,
 }	= constants;
 
+const filterHiddenCards = p => p.hide_cards;
+
+const mapToCardsPositionAndUserId = p => ({ cards: p.cards, position: p.position, user_id: p.user_id });
+
 module.exports = async (
 	io,
 	table_id,
@@ -54,7 +58,6 @@ module.exports = async (
 			const amountWonPerPlayer = Math.floor(currPotAmount / currWinnersLen);
 			// if players array is present, it means cards possibly need to be revealed
 			if (players) {
-				const filterHiddenCards = p => p.hide_cards;
 				// reveal player cards of current pot players who have not show their cards yet
 				// from player who last bet/raised (or started the hand) all the way to the pot winner(s)
 				const currPotUserIds = currPot.user_ids;
@@ -62,11 +65,6 @@ module.exports = async (
 				const currPotPlayersWithHiddenCards = currPotPlayers.filter(filterHiddenCards);
 				// if there are players with hidden cards in the current pot
 				if (currPotPlayersWithHiddenCards.length) {
-					const mapToCardsPositionAndUserId = p => ({
-						cards: p.cards,
-						position: p.position,
-						user_id: p.user_id,
-					});
 					const firstWinnerIdx = currPotPlayers.findIndex(p => p.user_id === currWinners[0].user_id);
 					if (firstWinnerIdx === -1) throw new Error('First winner of pot not found in pot players');
 					// reveal the cards of every player with hidden cards up to the first winner of the pot
