@@ -22,6 +22,7 @@ module.exports = async (io, table_id) => {
 		delay,
 		handleError,
 		handleGetNewCards,
+		handlePlayerCalls,
 		handleRemovePlayers,
 		handleTablePlayerPayloads,
 		handleTakeBlinds,
@@ -54,7 +55,8 @@ module.exports = async (io, table_id) => {
 		const { big_blind, hand_id, street, table_type } = (await tableDb.updateTableForNewHand(table_id))[0];
 		// by default, give actions and dealerBtn to player in position 0
 		let nextPlayerOnBtnPosition = 0;
-		let nextActionsPosition = 0;
+		let nextActionPosition = 0;
+		let nextActionPlayer;
 		const dealerBtnIdx = tablePlayers.findIndex(p => p.dealer_btn);
 		if (dealerBtnIdx !== -1) { // if there was previously a player OTB
 			// give the btn to the next player
@@ -62,15 +64,15 @@ module.exports = async (io, table_id) => {
 			const nextDealeBtnPlayer = tablePlayers[ nextDealerBtnIdx ];
 			nextPlayerOnBtnPosition = nextDealeBtnPlayer.position;
 			// if there are > 3 players in the hand, actions will be 3 seats after next dealerBtn player
-			let nextActionPlayer;
 			if (tablePlayersLen > 3) {
 				let actionIdx = nextDealerBtnIdx;
 				let i = 3;
 				while(i--) actionIdx = actionIdx === tablePlayersLen - 1 ? 0 : actionIdx + 1;
 				nextActionPlayer = tablePlayers[ actionIdx ];
 			} else nextActionPlayer = nextDealeBtnPlayer; // else action will be on next dealerBtn player
-			nextActionsPosition = nextActionPlayer.position;
-		}
+			nextActionPosition = nextActionPlayer.position;
+		// else if there was no player previously OTB, next action player is player in position 0 by default
+		} else nextActionPlayer = tablePlayers.find(p => p.position === nextActionPosition);
 		await tablePlayerDb.updateDealerBtn(table_id, nextPlayerOnBtnPosition);
 		await tablePlayerDb.resetHandDescriptions(table_id);
 		await tablePlayerDb.resetHideCards(table_id);
@@ -79,9 +81,12 @@ module.exports = async (io, table_id) => {
 		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
 		await handleGetNewCards.playerCards(io, table_id);
 		await handleTakeBlinds(io, table_id, big_blind);
-		await tablePlayerDb.updateEndAction(table_id, nextActionsPosition);
+		await tablePlayerDb.updateEndAction(table_id, nextActionPosition);
 		await delay(3000); // delay before starting the timer
-		return handleUpdateActionAndTimer(io, table_id, nextActionsPosition, table_type, street, hand_id);
+		const { table_chips, user_id } = nextActionPlayer;
+		await handleUpdateActionAndTimer(io, table_id, nextActionPosition, table_type, street, hand_id);
+		// if next action player has no table chips left, they are forced to just call the blind
+		if (!table_chips) return handlePlayerCalls(io, null, user_id);
 	} catch (e) {
 		return handleError('Error getting new hand.', e, null, io, table_room + table_id);
 	}

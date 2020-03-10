@@ -17,7 +17,7 @@ const {
 	update_action_chat,
 }	= constants;
 
-module.exports = async (io, socket) => {
+module.exports = async (io, socket, userId) => {
 	const {
 		getNextPlayer,
 		getPlayerIfActionOnPlayer,
@@ -30,7 +30,7 @@ module.exports = async (io, socket) => {
 	} = require('../../index.js');
 	let table_id;
 	try {
-		const { user_id } = socket;
+		const user_id = socket ? socket.user_id : userId;
 		const tablePlayer = await getPlayerIfActionOnPlayer(user_id);
 		table_id = tablePlayer.table_id;
 		await tablePlayerDb.resetTimerEnd(table_id);
@@ -42,18 +42,23 @@ module.exports = async (io, socket) => {
 		if (playerBet > call_amount) throw new Error(betGreaterThanCallAmountError);
 		// take appropriate chips from player
 		const playerCallAmount = call_amount - playerBet;
-		const chipsToTake = Math.min(table_chips, playerCallAmount);
-		await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake);
-		await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
-		const actionChatPayload = {
-			type: 'call',
-			payload: {
-				amount: chipsToTake,
-				description: 'called',
-				user_ids: [ user_id ],
-			},
-		};
-		await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+		// if there was an amount for the player to call, take those chips from the player
+		// else if there was nothing to call, that means the player was forced to just call the blind
+		// so do nothing in that scenario
+		if (playerCallAmount) {
+			const chipsToTake = Math.min(table_chips, playerCallAmount);
+			await tablePlayerDb.takePlayerChips(table_id, user_id, chipsToTake);
+			await handleTablePlayerPayloads(io, table_id, take_player_chips, [ playerPosition ], 2000);
+			const actionChatPayload = {
+				type: 'call',
+				payload: {
+					amount: chipsToTake,
+					description: 'called',
+					user_ids: [ user_id ],
+				},
+			};
+			await handleTablePlayerPayloads(io, table_id, update_action_chat, null, null, actionChatPayload);
+		}
 		const nextActionPlayer = await getNextPlayer(table_id, 'action');
 		// if there is no next action player, that means that everyone at the table is all in
 		if (!nextActionPlayer) return handleShowdown(io, table_id);
