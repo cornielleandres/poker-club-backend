@@ -57,7 +57,12 @@ module.exports = async (io, table_id) => {
 				const playerCardsToReveal = reorderedPlayers
 					.filter(p => p && p.cards.length && isNonEmptyObject(p.cards[0]))
 					.map(p => ({ cards: p.cards, position: p.position, user_id: p.user_id }));
-				await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
+				if (playerCardsToReveal.length) {
+					// if there are player cards to reveal,
+					// reveal them and then get the updated table players with the revealed cards
+					await revealPlayerCards(io, table_id, playerCardsToReveal, game_type);
+					tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(table_id);
+				}
 				// run out the streets
 				nextStreet = getNextStreet(nextStreet);
 				do {
