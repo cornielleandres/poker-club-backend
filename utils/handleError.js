@@ -16,7 +16,7 @@ const {
 
 module.exports = async (errMsgDescription, e, socket, io, room) => {
 	const { sendErrorEmail } = require('./index.js');
-	const user_id = socket ? socket.user_id : socket;
+	const user_id = socket ? socket.user_id : 0;
 	const errorStack = e.stack ? e.stack.toString() : e;
 	// if the error is that the player tried to join a table that does not exist anymore,
 	// no email needs to be sent for this, otherwise, send the error email
