@@ -13,9 +13,11 @@ const {
 }	= constants;
 
 module.exports = async (io, table_id, big_blind) => {
-	const { handleTablePlayerPayloads }	= require('../../index.js');
+	const { handleTablePlayerPayloads, isNonEmptyObject }	= require('../../index.js');
 	try {
-		const tablePlayers = await tablePlayerDb.getTablePlayersOrderedByPosition(table_id);
+		// tablePlayers will filter out those who arrived late and did not get dealt into the current hand
+		const tablePlayers = (await tablePlayerDb.getTablePlayersOrderedByPosition(table_id))
+			.filter(p => p.cards.length && isNonEmptyObject(p.cards[0]));
 		const numOfPlayers = tablePlayers.length;
 		const small_blind = big_blind / 2;
 		let smallBlindPlayer;
