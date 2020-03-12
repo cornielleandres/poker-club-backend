@@ -15,6 +15,14 @@ const player_folds				= 'player_folds';
 const player_raises				= 'player_raises';
 const update_player_notes	= 'update_player_notes';
 
+const _handleSentAction = (socket, actionFunc) => async param => {
+	// if player already performed an action(call, check, etc.), do not perform action twice in a row
+	if (socket.sentTableAction) return;
+	socket.sentTableAction = true;
+	await actionFunc(param);
+	socket.sentTableAction = false;
+};
+
 const _addAllTableEventListeners = (io, socket) => {
 	const {
 		handleAddToPlayerChat,
@@ -26,11 +34,11 @@ const _addAllTableEventListeners = (io, socket) => {
 		updatePlayerNotes,
 	}	= require('../../index.js');
 	socket.on(add_to_player_chat, msg => handleAddToPlayerChat(io, socket, msg));
-	socket.on(player_calls, () => handlePlayerCalls(io, socket));
-	socket.on(player_checks, () => handlePlayerChecks(io, socket));
-	socket.on(player_discards, cardIdx => handlePlayerDiscards(io, socket, cardIdx));
-	socket.on(player_folds, () => handlePlayerFolds(io, socket));
-	socket.on(player_raises, raise => handlePlayerRaises(io, socket, raise));
+	socket.on(player_calls, _handleSentAction(socket, () => handlePlayerCalls(io, socket)));
+	socket.on(player_checks, _handleSentAction(socket, () => handlePlayerChecks(io, socket)));
+	socket.on(player_discards, _handleSentAction(socket, card => handlePlayerDiscards(io, socket, card)));
+	socket.on(player_folds, _handleSentAction(socket, () => handlePlayerFolds(io, socket)));
+	socket.on(player_raises, _handleSentAction(socket, raise => handlePlayerRaises(io, socket, raise)));
 	socket.on(update_player_notes, (newNotes, callback) => updatePlayerNotes(socket, newNotes, callback));
 };
 
