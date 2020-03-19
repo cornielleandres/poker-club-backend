@@ -12,10 +12,19 @@ const {
 }	= require('../../../data/models/index.js');
 
 const {
+	player_joined,
 	table_room,
 }	= constants;
 
-module.exports = async (io, table_id, event_name, positions, delayTime, chatMessagePayload) => {
+module.exports = async (
+	io,
+	table_id,
+	event_name,
+	positions,
+	delayTime,
+	chatMessagePayload,
+	allowPlayerAction,
+) => {
 	const { delay, handleError, isNonEmptyObject }	= require('../../index.js');
 	try {
 		const table = await tableDb.getTable(table_id);
@@ -60,6 +69,11 @@ module.exports = async (io, table_id, event_name, positions, delayTime, chatMess
 										&& isNonEmptyObject(p.cards[0]) // is currently in the hand
 										&& p.hide_cards // is set to hide their cards
 									) p.cards = p.cards.map(() => ({ rank: 0 })); // map to hidden cards
+									// allowPlayerAction will be true only when all the activity at the table is done,
+									// and only then will a player be allowed to take action.
+									// this stops the action btns from appearing and disappearing while cards are being dealt.
+									// none of this applies if all that occurred was a player joining
+									if (event_name !== player_joined && !allowPlayerAction && p && p.action) p.action = false;
 									return p;
 								});
 							const playerNotes = allPlayerNotes.filter(notes => notes.user_id === clientUserId);
