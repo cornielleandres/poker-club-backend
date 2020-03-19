@@ -10,6 +10,7 @@ const {
 
 const {
 	joiningTableError,
+	player_joined,
 	update_action_chat,
 }	= constants;
 
@@ -32,7 +33,7 @@ module.exports = async (io, socket, table_id, callback) => {
 		const { position } = tablePlayer;
 		await tablePlayerDb.updateInTableRoom(table_id, user_id, true);
 		await handleUpdateLobbyTables(null, socket);
-		await handleTablePlayerPayloads(io, table_id, 'player_joined', [ position ]);
+		await handleTablePlayerPayloads(io, table_id, player_joined, [ position ]);
 		const actionChatPayload = {
 			type: 'player_join',
 			payload: { description: 'joined the table', user_ids: [ user_id ] },
