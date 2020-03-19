@@ -42,7 +42,7 @@ const updateAction = async (table_id, position, trx) => {
 const updateEndAction = async (table_id, position, trx) => {
 	const knex = trx ? trx : db;
 	await knex('table-players').update({ end_action: false }).where({ table_id, end_action: true });
-	if (position !== undefined) {
+	if (!isNaN(position)) { // if position is a number (note: position can be 0, which is falsy)
 		return knex('table-players').update({ end_action: true }).where({ table_id, position });
 	}
 };
