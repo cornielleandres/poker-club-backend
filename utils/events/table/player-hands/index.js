@@ -15,7 +15,6 @@ const getPlayerHands					= require('./getPlayerHands.js');
 const getWinners							= require('./getWinners.js');
 const handleCheckKickers			= require('./handleCheckKickers.js');
 const handlePossibleSplitPot	= require('./handlePossibleSplitPot.js');
-const updateHandDescriptions	= require('./updateHandDescriptions.js');
 
 module.exports = {
 	checkFlush,
@@ -35,5 +34,4 @@ module.exports = {
 	getWinners,
 	handleCheckKickers,
 	handlePossibleSplitPot,
-	updateHandDescriptions,
 };

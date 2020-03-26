@@ -1,19 +1,19 @@
 // config
 const {
 	constants,
-}	= require('../../../../config/index.js');
+}	= require('../../../config/index.js');
 
 // databases
 const {
 	tablePlayerDb,
-}	= require('../../../../data/models/index.js');
+}	= require('../../../data/models/index.js');
 
 const {
 	table_room,
 }	= constants;
 
 module.exports = async (io, table_id, players) => {
-	const { handleError, handleTablePlayerPayloads }	= require('../../../index.js');
+	const { handleError, handleTablePlayerPayloads }	= require('../../index.js');
 	try {
 		for (const player of players) {
 			const { handInfo, position, user_id } = player;
