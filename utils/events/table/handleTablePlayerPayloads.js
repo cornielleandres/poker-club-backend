@@ -13,8 +13,13 @@ const {
 
 const {
 	player_joined,
+	streets,
 	table_room,
 }	= constants;
+
+const {
+	preflop,
+}	= streets;
 
 module.exports = async (
 	io,
@@ -26,6 +31,7 @@ module.exports = async (
 	allowPlayerAction,
 ) => {
 	const { delay, handleError, isNonEmptyObject }	= require('../../index.js');
+	const { getPlayerHands }	= require('./player-hands/index.js');
 	try {
 		const table = await tableDb.getTable(table_id);
 		const tablePlayers = table.players;
@@ -39,8 +45,8 @@ module.exports = async (
 					const clientSocket = io.sockets.connected[ client ];
 					if (clientSocket) { // if client is still connected
 						const { user_id: clientUserId } = clientSocket;
-						const playerIndex = tablePlayers.findIndex(p => p && p.user_id === clientUserId);
-						if (playerIndex !== -1) { // if player is still sitting at table
+						const clientPlayerIndex = tablePlayers.findIndex(p => p && p.user_id === clientUserId);
+						if (clientPlayerIndex !== -1) { // if client is still sitting at table
 							if (chatMessagePayload) { // if sending a chat message
 								let payload = chatMessagePayload;
 								if (chatMessagePayload.payload.user_ids) {
@@ -56,10 +62,22 @@ module.exports = async (
 								return clientsAndPayloads.push({ client, payload });
 							}
 							const clientTable = _.cloneDeep(table);
-							const { players } = clientTable;
+							const { community_cards, game_type, players, street } = clientTable;
+							const clientPlayer = clientTable.players[ clientPlayerIndex ];
+							// if the following conditions are met, show each client their individual hand descriptions
+							if (
+								street && street !== preflop // on a street that is not preflop
+								&& isNonEmptyObject(community_cards[0]) // there are community cards already dealt
+								&& clientPlayer.cards.length // client has not folded
+								&& isNonEmptyObject(clientPlayer.cards[0]) // client is currently in the hand
+							) {
+								const playerHands = [ clientPlayer ];
+								getPlayerHands(playerHands, community_cards, game_type);
+								clientPlayer.hand_description = playerHands[0].handInfo.description;
+							}
 							clientTable.players = players
-								.slice(playerIndex)
-								.concat(players.slice(0, playerIndex))
+								.slice(clientPlayerIndex)
+								.concat(players.slice(0, clientPlayerIndex))
 								.map(p => {
 									// if the following conditions are met, hide the player's cards in the payload
 									if (
