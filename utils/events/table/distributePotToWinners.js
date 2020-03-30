@@ -78,22 +78,36 @@ module.exports = async (
 				// from player in end_action position (player who last bet/raised or started the hand)
 				// all the way to the pot winner(s)
 				const currPotUserIds = currPot.user_ids;
-				const currPotPlayers = playersStartingFromEndAction.filter(p => currPotUserIds.includes(p.user_id));
+				const currPotPlayersStartingFromEndAction = playersStartingFromEndAction
+					.filter(p => currPotUserIds.includes(p.user_id));
 				// if there are players with hidden cards in the current pot
-				if (currPotPlayers.filter(p => p.hide_cards).length) {
-					const firstWinnerIdx = currPotPlayers.findIndex(p => p.user_id === currWinners[0].user_id);
+				if (currPotPlayersStartingFromEndAction.filter(p => p.hide_cards).length) {
+					const firstWinnerIdx = currPotPlayersStartingFromEndAction
+						.findIndex(p => p.user_id === currWinners[0].user_id);
 					if (firstWinnerIdx === -1) throw new Error('First winner of pot not found in pot players.');
-					// reveal the cards of every player with hidden cards up to the first winner of the pot
-					// and then reveal the cards of every winner with hidden cards after that
-					const playerCardsToReveal = currPotPlayers
-						.slice(0, firstWinnerIdx ? firstWinnerIdx : undefined)
-						.concat(currWinners.filter((p, i) => i)) // filter out the first winner (index 0)
+					// reveal the hidden cards of every player with a better winning hand than the previous player
+					// up to the first winner of the pot
+					// and then reveal the hidden cards of every winner after that
+					const playersToReveal = [];
+					for (let i = 0; i < firstWinnerIdx; i++) {
+						const lastPlayerToReveal = playersToReveal[playersToReveal.length - 1];
+						const currPlayer = currPotPlayersStartingFromEndAction[i];
+						if (lastPlayerToReveal) {
+							// if the current player has an equal or better hand than the last player to reveal,
+							// then reveal current player's cards
+							if (currPlayer.handInfo.handRanking >= lastPlayerToReveal.handInfo.handRanking) {
+								playersToReveal.push(currPlayer);
+							}
+						} else playersToReveal.push(currPlayer);
+					}
+					const playerCardsToReveal = playersToReveal
+						.concat(currWinners) // add all the winners
 						.filter(p => p.hide_cards) // get only those players with hidden cards, in order to reveal them
 						.map(p => ({ cards: p.cards, handInfo: p.handInfo, position: p.position, user_id: p.user_id }));
 					await revealPlayerCards(io, table_id, playerCardsToReveal, game_type, true);
 				} else {
 					// else if there are players with revealed cards, update their hand descriptions
-					const playersWithRevealedCards = currPotPlayers.filter(p => !p.hide_cards);
+					const playersWithRevealedCards = currPotPlayersStartingFromEndAction.filter(p => !p.hide_cards);
 					await updateHandDescriptions(io, table_id, playersWithRevealedCards);
 				}
 			}
