@@ -28,6 +28,7 @@
 		"socketio-auth": "^0.1.1"
 	},
 	"resolutions": {
+		"kind-of": "^6.0.3",
 		"minimist": "^1.2.2"
 	},
 	"devDependencies": {
