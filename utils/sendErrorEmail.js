@@ -38,5 +38,8 @@ module.exports = (errMsgDescription, errorStack, user_id, nodeEnv) => {
 			<b>Error Stack: </b><pre>${ errorStack }</pre>
 			`,
 	};
+	console.log('=== ERROR BEGIN ===');
+	console.log(mailOptions.html);
+	console.log('=== ERROR END ===');
 	return transporter.sendMail(mailOptions, sendMailCallback);
 };
