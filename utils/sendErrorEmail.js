@@ -6,17 +6,21 @@ const {
 }	= require('../config/index.js');
 
 const {
-	nodemailerHost: host,
-	nodemailerPort: port,
+	// nodemailerHost: host,
+	// nodemailerPort: port,
 	nodemailerUser: user,
 	nodemailerPass: pass,
 	nodemailerAdminUser: adminUser,
 }	= variables;
 
+// const transporter = nodemailer.createTransport({
+// 	host,
+// 	port,
+// 	requireTLS: true,
+// 	auth: { user, pass },
+// });
 const transporter = nodemailer.createTransport({
-	host,
-	port,
-	requireTLS: true,
+	service: 'hotmail',
 	auth: { user, pass },
 });
 
